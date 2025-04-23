@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "430875000296",
+    "project_id": "officialsongreview",
+    "storage_bucket": "officialsongreview.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:430875000296:android:a1c826c05ad4521efbb85d",
+        "android_client_info": {
+          "package_name": "com.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmj__wFzn0W3ijZp6CNX9tuja-9WFisXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
