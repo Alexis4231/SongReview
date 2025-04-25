@@ -15,14 +15,8 @@ class RegisterScreenViewModel(
     private val saveUserUseCase: SaveUserUseCase
 ) : ViewModel() {
 
-    private val _user = MutableStateFlow(User("", "", "","",""))
+    private val _user = MutableStateFlow(User("", "", ""))
     val user: StateFlow<User> = _user
-
-    fun setCode(code: String) {
-        _user.value = _user.value.copy(
-            code = code
-        )
-    }
 
     fun setName(name: String) {
         _user.value = _user.value.copy(
@@ -33,36 +27,6 @@ class RegisterScreenViewModel(
     fun setEmail(email:String){
         _user.value = _user.value.copy(
             email = email
-        )
-    }
-
-    fun setPassword(password: String) {
-        _user.value = _user.value.copy(
-            password = password
-        )
-    }
-
-    fun setSalt(salt: String){
-        _user.value = _user.value.copy(
-            salt = salt
-        )
-    }
-
-    fun clearName() {
-        _user.value = _user.value.copy(
-            name = ""
-        )
-    }
-
-    fun clearEmail() {
-        _user.value = _user.value.copy(
-            email = ""
-        )
-    }
-
-    fun clearPassword() {
-        _user.value = _user.value.copy(
-            password = ""
         )
     }
 

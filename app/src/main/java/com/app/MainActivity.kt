@@ -1,15 +1,16 @@
 package com.app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.annotation.RequiresApi
 import com.app.presentation.navigation.NavGraph
 import com.app.presentation.ui.theme.SongReviewTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -18,13 +19,5 @@ class MainActivity : ComponentActivity() {
                 NavGraph()
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SongReviewTheme {
-        NavGraph()
     }
 }

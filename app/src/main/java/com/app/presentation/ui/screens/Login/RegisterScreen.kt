@@ -49,31 +49,13 @@ import com.app.R
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.RegisterScreenViewModel
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.actionCodeSettings
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import java.security.SecureRandom
-import java.util.Base64
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RegisterScreen(navController: NavController,registerScreenViewModel: RegisterScreenViewModel = koinViewModel()) {
-    val actionCodeSettings = actionCodeSettings {
-        // URL you want to redirect back to. The domain (www.example.com) for this
-        // URL must be whitelisted in the Firebase Console.
-        url = "https://officialsongreview.web.app//finishSignUp?cartId=1234"
-        // This must be true
-        handleCodeInApp = true
-        setIOSBundleId("com.example.ios")
-        setAndroidPackageName(
-            "com.example.android",
-            true, // installIfNotAvailable
-            "12", // minimumVersion
-        )
-    }
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -270,14 +252,11 @@ fun RegisterScreen(navController: NavController,registerScreenViewModel: Registe
                             registerScreenViewModel.avaliableUsername(
                                 name,
                                 {
-                                    val (hashedPassword, salt) = hashPassword(password)
                                     registerUser(email, password) { success ->
                                         scope.launch {
                                             if (success) {
                                                 registerScreenViewModel.setName(name)
                                                 registerScreenViewModel.setEmail(email)
-                                                registerScreenViewModel.setPassword(hashedPassword)
-                                                registerScreenViewModel.setSalt(salt)
                                                 registerScreenViewModel.save()
                                                 navController.navigate(Screen.SuccesRegister.route)
 
@@ -337,17 +316,4 @@ fun registerUser(email: String, password: String, onComplete: (Boolean) -> Unit)
                 onComplete(false)
             }
         }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun hashPassword(password: String): Pair<String, String>{
-    val random = SecureRandom()
-    val salt = ByteArray(16)
-    random.nextBytes(salt)
-    val spec = PBEKeySpec(password.toCharArray(), salt,65536,256)
-    val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-    val hash = factory.generateSecret(spec).encoded
-    val encondedHash = Base64.getEncoder().encodeToString(hash)
-    val encodedSalt = Base64.getEncoder().encodeToString(salt)
-    return Pair(encondedHash,encodedSalt)
 }

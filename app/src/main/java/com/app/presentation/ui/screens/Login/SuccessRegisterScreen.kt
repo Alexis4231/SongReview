@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.R
 import com.app.presentation.navigation.Screen
-import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun SuccessRegisterScreen(navController: NavController){

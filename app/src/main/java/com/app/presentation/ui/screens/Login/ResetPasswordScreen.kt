@@ -169,6 +169,7 @@ fun ResetPasswordScreen(navController: NavController){
                         }
                     }else {
                         scope.launch {
+                            resetpassword(email)
                             navController.navigate(Screen.SuccessResetPassword.route)
                         }
                     }
@@ -199,10 +200,7 @@ fun ResetPasswordScreen(navController: NavController){
             contentAlignment = Alignment.Center
         ) {
             Button(
-                onClick = {
-                    resetpassword(email)
-                    navController.navigate(Screen.Login.route)
-                          },
+                onClick = { navController.navigate(Screen.Login.route) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = screenWidth * 0.04f)
@@ -222,8 +220,4 @@ fun ResetPasswordScreen(navController: NavController){
 
 fun resetpassword(email: String){
     Firebase.auth.sendPasswordResetEmail(email)
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-            }
-        }
 }

@@ -28,5 +28,5 @@ val appModule = module{
 
     // ViewModel
     viewModel{RegisterScreenViewModel(get(),get())}
-    viewModel{LoginScreenViewModel(get(),get())}
+    viewModel{LoginScreenViewModel(get())}
 }
