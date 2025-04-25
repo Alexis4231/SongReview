@@ -58,6 +58,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     implementation("io.insert-koin:koin-android:3.4.1")
     implementation("io.insert-koin:koin-androidx-compose:3.4.1")
+    implementation("androidx.compose.material:material:1.7.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

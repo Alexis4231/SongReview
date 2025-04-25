@@ -1,12 +1,12 @@
 package com.app.presentation.navigation
 
+import HomeScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.app.presentation.ui.screens.HomeScreen
 import com.app.presentation.ui.screens.Login.LoginScreen
 import com.app.presentation.ui.screens.Login.RegisterScreen
 import com.app.presentation.ui.screens.Login.ResetPasswordScreen

@@ -6,7 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import com.app.presentation.navigation.NavGraph
+import com.app.presentation.ui.screens.NavScreen
 import com.app.presentation.ui.theme.SongReviewTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,8 +19,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SongReviewTheme{
-                NavGraph()
+                NavScreen()
             }
         }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    SongReviewTheme {
+        NavScreen()
     }
 }
