@@ -10,7 +10,4 @@ sealed class Screen(val route: String) {
     data object Profile: Screen("profile")
     data object ResetPassword: Screen("resetpassword")
     data object SuccessResetPassword: Screen("successresetpassword")
-    companion object{
-        val items = listOf(Home,Add,Search,Profile)
-    }
 }

@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MarkEmailRead
@@ -39,7 +41,6 @@ fun SuccessRegisterScreen(navController: NavController){
     modifier = Modifier
     .fillMaxSize()
     .background(color = Color.Black),
-
     horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -92,6 +93,7 @@ fun SuccessRegisterScreen(navController: NavController){
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .padding(horizontal = screenWidth * 0.07f),
             contentAlignment = Alignment.Center
         ) {
