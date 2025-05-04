@@ -62,6 +62,14 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
+    val screensWithoutNavBar = listOf(
+        Screen.Login.route,
+        Screen.Register.route,
+        Screen.SuccesRegister.route,
+        Screen.ResetPassword.route,
+        Screen.SuccessResetPassword.route,
+        Screen.Search.route
+    )
     val navController = rememberNavController()
     val systemUiController = rememberSystemUiController()
     LaunchedEffect(true) {
@@ -75,9 +83,14 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             .fillMaxSize()
             .background(Color.Black)
             .systemBarsPadding(),
-        topBar = { HeaderBar() },
+        topBar = {
+            if (currentRoute !in screensWithoutNavBar) {
+                HeaderBar()
+            }
+        },
+
         bottomBar = {
-            if (currentRoute != Screen.Login.route) {
+            if (currentRoute !in screensWithoutNavBar) {
                 BottomNavigationBar(navController = navController, navBarViewModel)
             }
         }
