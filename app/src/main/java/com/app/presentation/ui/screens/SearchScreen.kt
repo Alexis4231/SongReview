@@ -17,7 +17,7 @@ fun SearchScreen(viewModel: ArtistViewModel = viewModel()) {
     val artist by viewModel.artist.collectAsState()
 
     LaunchedEffect(Unit) {
-        val token = "BQCEVP63-XnaEBSS0-ZYaltkjvsFyPwIWvuJs8lRCENQRjWuvnaIHcfBL-dx0vvxaF0ehp4MXYtoBK4P0D66iyEkHKpijyCCa_ug_mnRkUh88dWJONXG2N_GS7enzc76KlnkwWoK7Ds"
+        val token = "BQD-ZKxYD-JyPAoWhYufLcogv3LbfIgtNsS0DQHbzG2_5VIb_Lh4YSNx4ZVmmObgb4fGg27I9ayRHDcw4Uu7-0M9AjAX_pCFE5EoHWLgWiyyq-tjD--KCfFeckDfDWltR5BrzvaiyM4"
         viewModel.loadArtist(token)
     }
 

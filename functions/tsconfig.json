@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "lib": ["es2020"],
-    "module": "commonjs",
+    "lib": ["es2020", "dom", "dom.iterable", "esnext.asynciterable", "esnext.promise", "esnext.string"],
+    "module": "ESNext",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "noImplicitReturns": true,
@@ -13,7 +13,6 @@
     "skipLibCheck": true
   },
   "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

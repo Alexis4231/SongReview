@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 class ArtistViewModel : ViewModel() {
     private val _artist = MutableStateFlow<Artist?>(null)
     val artist: StateFlow<Artist?> = _artist
-    private val apiClient =
     fun loadArtist(token: String){
         viewModelScope.launch {
             try{
@@ -26,5 +25,4 @@ class ArtistViewModel : ViewModel() {
             }
         }
     }
-
 }
