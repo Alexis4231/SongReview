@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["es2020", "dom", "dom.iterable", "esnext.asynciterable", "esnext.promise", "esnext.string"],
-    "module": "ESNext",
+    "module": "commonjs",
     "esModuleInterop": true,
     "moduleResolution": "node",
     "noImplicitReturns": true,

@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -54,7 +56,7 @@ import com.app.presentation.ui.theme.SongReviewTheme
 fun AddScreen() {
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
-    val styles = listOf("Pop", "Rock", "Jazz", "Country")
+    val styles = listOf("Pop", "Rock", "Hip Hop/Rap", "Jazz", "Blues", "Clásica", "Reggae", "Country", "Folk", "R&B", "Electrónica/Dance", "Soul", "Punk", "Metal", "Reggaeton", "Latino", "Gospel", "Funk", "Disco", "Trap")
     var selectedStyle by remember { mutableStateOf("Seleccionar") }
     var expanded by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
@@ -240,7 +242,7 @@ fun AddScreen() {
                         ),
                         trailingIcon = {
                             Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
+                                imageVector = Icons.Filled.ArrowDropUp,
                                 contentDescription = "Dropdown Arrow",
                                 tint = Color.White,
                                 modifier = Modifier.rotate(rotationAngle)

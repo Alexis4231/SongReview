@@ -2,7 +2,6 @@ package com.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.app.data.api.SpotifyApiService
 import com.app.data.retrofit.RetrofitClient
 import com.app.domain.model.Artist
 import kotlinx.coroutines.flow.MutableStateFlow

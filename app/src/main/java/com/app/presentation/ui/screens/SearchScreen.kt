@@ -11,18 +11,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.presentation.viewmodel.ArtistViewModel
+import com.app.presentation.viewmodel.SpotifyViewModel
 
 @Composable
-fun SearchScreen(viewModel: ArtistViewModel = viewModel()) {
-    val artist by viewModel.artist.collectAsState()
+fun SearchScreen(artistViewModel: ArtistViewModel = viewModel(), spotifyViewModel: SpotifyViewModel = viewModel()) {
+    val artist by artistViewModel.artist.collectAsState()
+    val token by spotifyViewModel.token.collectAsState()
 
-    LaunchedEffect(Unit) {
-        val token = "BQD-ZKxYD-JyPAoWhYufLcogv3LbfIgtNsS0DQHbzG2_5VIb_Lh4YSNx4ZVmmObgb4fGg27I9ayRHDcw4Uu7-0M9AjAX_pCFE5EoHWLgWiyyq-tjD--KCfFeckDfDWltR5BrzvaiyM4"
-        viewModel.loadArtist(token)
+    LaunchedEffect(token) {
+        if(token == null) {
+            spotifyViewModel.loadToken()
+        }else{
+            token?.let { artistViewModel.loadArtist(it.access_token) }
+        }
     }
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Artista")
         Text(artist?.name + " tiene " + artist?.followers?.total + " seguidores")
-    }
 }

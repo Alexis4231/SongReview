@@ -1,8 +1,8 @@
 {
   "name": "functions",
-  "type": "module",
   "scripts": {
     "lint": "eslint .",
+    "start": "functions-framework --target=getSpotifyToken",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
@@ -16,12 +16,15 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@google-cloud/functions-framework": "^4.0.0",
+    "dotenv": "^16.5.0",
     "firebase-admin": "^13.3.0",
     "firebase-functions": "^6.3.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^2.7.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",
+    "@types/node-fetch": "^2.6.12",
     "@typescript-eslint/eslint-plugin": "^5.12.0",
     "@typescript-eslint/parser": "^5.12.0",
     "eslint": "^8.9.0",
@@ -30,5 +33,13 @@
     "firebase-functions-test": "^3.1.0",
     "typescript": "^4.9.5"
   },
-  "private": true
+  "private": true,
+  "version": "1.0.0",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
