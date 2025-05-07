@@ -10,18 +10,14 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MusicNote
@@ -38,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,7 +50,6 @@ import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
 import com.app.presentation.ui.screens.ProfileScreen
 import com.app.presentation.ui.screens.SearchScreen
 import com.app.presentation.viewmodel.NavBarViewModel
-import com.app.R
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 
@@ -83,12 +77,6 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             .fillMaxSize()
             .background(Color.Black)
             .systemBarsPadding(),
-        topBar = {
-            if (currentRoute !in screensWithoutNavBar) {
-                HeaderBar()
-            }
-        },
-
         bottomBar = {
             if (currentRoute !in screensWithoutNavBar) {
                 BottomNavigationBar(navController = navController, navBarViewModel)
@@ -114,25 +102,6 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             composable(Screen.ResetPassword.route) { ResetPasswordScreen(navController) }
             composable(Screen.SuccessResetPassword.route) { SuccessRegisterScreen(navController) }
         }
-    }
-}
-
-@Composable
-fun HeaderBar(){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.iconlogo),
-            contentDescription = "Logo",
-            tint = Color.Unspecified,
-            modifier = Modifier.size(70.dp)
-        )
     }
 }
 

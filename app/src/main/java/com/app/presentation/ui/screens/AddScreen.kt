@@ -32,6 +32,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,22 +51,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.presentation.ui.theme.SongReviewTheme
+import com.app.presentation.viewmodel.DeezerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen() {
+fun AddScreen(deezerViewModel: DeezerViewModel = viewModel()) {
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
-    val styles = listOf("Pop", "Rock", "Hip Hop/Rap", "Jazz", "Blues", "Clásica", "Reggae", "Country", "Folk", "R&B", "Electrónica/Dance", "Soul", "Punk", "Metal", "Reggaeton", "Latino", "Gospel", "Funk", "Disco", "Trap")
+    val genres by deezerViewModel.genres.collectAsState()
     var selectedStyle by remember { mutableStateOf("Seleccionar") }
     var expanded by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
     val rotationAngle by animateFloatAsState(if (expanded) 180f else 0f)
+
+    LaunchedEffect(Unit) {
+        if(genres.isEmpty()) {
+            deezerViewModel.loadGenres()
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFF585D5F)).padding(vertical = 87.dp),
+        modifier = Modifier.fillMaxSize().background(Color(0xFF585D5F)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -82,7 +93,7 @@ fun AddScreen() {
         }
         Column(
             modifier = Modifier
-                .weight(1f)
+                .weight(1.5f)
                 .fillMaxWidth()
                 .padding(horizontal = screenWidth * 0.07f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -261,11 +272,11 @@ fun AddScreen() {
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        styles.forEach { style ->
+                        genres.forEach { genre ->
                             DropdownMenuItem(
-                                text = { Text(style) },
+                                text = { Text(genre.name) },
                                 onClick = {
-                                    selectedStyle = style
+                                    selectedStyle = genre.name
                                     expanded = false
                                 }
                             )
@@ -276,7 +287,7 @@ fun AddScreen() {
         }
         Box(
             modifier = Modifier
-                .weight(0.5f)
+                .weight(1.5f)
                 .fillMaxWidth()
                 .padding(horizontal = screenWidth * 0.07f),
             contentAlignment = Alignment.Center

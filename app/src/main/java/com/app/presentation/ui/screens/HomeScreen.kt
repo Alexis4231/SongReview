@@ -20,7 +20,7 @@ fun HomeScreen(navController: NavController){
             .padding(16.dp)
     ) {
         Text(
-            text = "Test Scroll Screen",
+            text = "Inicio",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )

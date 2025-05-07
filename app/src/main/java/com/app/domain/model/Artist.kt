@@ -1,11 +1,11 @@
 package com.app.domain.model
 
-data class Artist(
-    val id: String,
-    val name: String,
-    val followers: Followers
+data class ArtistResponse(
+    val data: List<ArtistData>
 )
 
-data class Followers(
-    val total: Int
+data class ArtistData(
+    val id: Int,
+    val name: String,
+    val link: String
 )
