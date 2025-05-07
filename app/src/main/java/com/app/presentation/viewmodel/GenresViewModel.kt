@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class DeezerViewModel : ViewModel() {
+class GenresViewModel : ViewModel() {
     private val _genres = MutableStateFlow<List<Genre>>(emptyList())
     val genres: StateFlow<List<Genre>> = _genres
 
