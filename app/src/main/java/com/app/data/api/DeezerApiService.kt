@@ -1,9 +1,12 @@
 package com.app.data.api
 
+import com.app.domain.model.Album
+import com.app.domain.model.Artist
 import com.app.domain.model.ArtistResponse
 import com.app.domain.model.GenresResponse
 import com.app.domain.model.SongResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface DeezerApiService {
@@ -23,5 +26,4 @@ interface DeezerApiService {
         @Query("limit") limit: Int = 50,
         @Query("index") page: Int = 0
     ): SongResponse
-
 }

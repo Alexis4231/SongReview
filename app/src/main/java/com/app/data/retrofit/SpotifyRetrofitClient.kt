@@ -4,7 +4,7 @@ import com.app.data.api.SpotifyApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object RetrofitClient {
+object SpotifyRetrofitClient {
   private val retrofit by lazy {
       Retrofit.Builder()
           .baseUrl("https://api.spotify.com/")

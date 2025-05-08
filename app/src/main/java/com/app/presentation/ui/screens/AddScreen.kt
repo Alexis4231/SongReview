@@ -1,7 +1,5 @@
 package com.app.presentation.ui.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +30,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -55,7 +52,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,14 +59,13 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.presentation.ui.theme.SongReviewTheme
-import com.app.presentation.viewmodel.ArtistsViewModel
+import com.app.presentation.viewmodel.DeezerArtistsViewModel
 import com.app.presentation.viewmodel.GenresViewModel
 import com.app.presentation.viewmodel.SongsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(genresViewModel: GenresViewModel = viewModel(), artistsViewModel: ArtistsViewModel = viewModel(), songsViewModel: SongsViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
+fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), songsViewModel: SongsViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
     val genres by genresViewModel.genres.collectAsState()
@@ -82,7 +77,7 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), artistsViewModel: 
     val rotationAngle by animateFloatAsState(if (expanded) 180f else 0f)
     var songSelectedState by remember { mutableStateOf(false) }
     var artistSelectedState by remember { mutableStateOf(false) }
-    val suggestionsArtists by artistsViewModel.artists.collectAsState()
+    val suggestionsArtists by deezerArtistsViewModel.artists.collectAsState()
     val suggestionsSongs by songsViewModel.songs.collectAsState()
     var isSuggestionArtistsVisible by remember { mutableStateOf(false) }
     var isSuggestionSongsVisible by remember { mutableStateOf(false) }
@@ -96,7 +91,7 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), artistsViewModel: 
 
     LaunchedEffect(artist) {
         if (artist.isNotBlank()) {
-            artistsViewModel.loadArtists(artist, currentPageArtist)
+            deezerArtistsViewModel.loadArtists(artist, currentPageArtist)
             isSuggestionArtistsVisible = true
         } else {
             isSuggestionArtistsVisible = false
@@ -255,6 +250,8 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), artistsViewModel: 
                                                             isSuggestionSongsVisible = false
                                                             onSearchSong(suggestion.title)
                                                             songSelectedState = true
+                                                            artist = suggestion.artist.name
+                                                            artistSelectedState = true
                                                         }
                                                         .padding(12.dp),
                                                     color = Color.Black
