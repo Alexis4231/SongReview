@@ -59,13 +59,14 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.app.presentation.viewmodel.DeezerAlbumsViewModel
 import com.app.presentation.viewmodel.DeezerArtistsViewModel
 import com.app.presentation.viewmodel.GenresViewModel
 import com.app.presentation.viewmodel.SongsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), songsViewModel: SongsViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
+fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), songsViewModel: SongsViewModel = viewModel(), albumsViewModel: DeezerAlbumsViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
     val genres by genresViewModel.genres.collectAsState()
@@ -85,7 +86,7 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
     var songTextFieldHeight by remember { mutableStateOf(0f) }
     var artistTextFieldPositionY by remember { mutableStateOf(0f) }
     var artistTextFieldHeight by remember { mutableStateOf(0f) }
-
+    val albums by albumsViewModel.albums.collectAsState()
     var currentPageArtist by remember { mutableStateOf(1) }
     var currentPageSongs by remember { mutableStateOf(1) }
 

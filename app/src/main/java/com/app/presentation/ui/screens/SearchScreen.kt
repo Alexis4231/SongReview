@@ -1,20 +1,27 @@
 package com.app.presentation.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.domain.model.Song
-import com.app.presentation.viewmodel.DeezerArtistsViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.app.presentation.viewmodel.DeezerAlbumsViewModel
 
 @Composable
-fun SearchScreen() {}
+fun AlbumsScreenByArtist(
+    artistId: Int,
+    viewModel: DeezerAlbumsViewModel = viewModel()
+) {
+    val albums by viewModel.albums.collectAsState()
+
+    LaunchedEffect(artistId) {
+        viewModel.loadAlbums(artistId)
+    }
+
+    LazyColumn {
+        items(albums) { album ->
+
+        }
+    }
+}

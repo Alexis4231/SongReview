@@ -5,7 +5,6 @@ data class ArtistResponse(
 )
 
 data class Artist(
-    val name: String,
+    val id: Int,
+    val name: String
 )
-
-
