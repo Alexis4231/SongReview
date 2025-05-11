@@ -30,4 +30,3 @@ protobuf-java-x-x-x = { module = "com.google.protobuf:protobuf-java.3.0.1" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-

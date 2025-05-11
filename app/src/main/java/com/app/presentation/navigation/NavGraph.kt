@@ -47,6 +47,7 @@ import com.app.presentation.ui.screens.Login.LoginScreen
 import com.app.presentation.ui.screens.Login.RegisterScreen
 import com.app.presentation.ui.screens.Login.ResetPasswordScreen
 import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
+import com.app.presentation.ui.screens.Login.SuccessResetPasswordScreen
 import com.app.presentation.ui.screens.ProfileScreen
 import com.app.presentation.ui.screens.SearchScreen
 import com.app.presentation.viewmodel.NavBarViewModel
@@ -98,9 +99,9 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             composable(Screen.Home.route) { HomeScreen(navController) }
             composable(Screen.Add.route) { AddScreen() }
             composable(Screen.Search.route) { SearchScreen() }
-            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.Profile.route) { ProfileScreen(navController, navBarViewModel) }
             composable(Screen.ResetPassword.route) { ResetPasswordScreen(navController) }
-            composable(Screen.SuccessResetPassword.route) { SuccessRegisterScreen(navController) }
+            composable(Screen.SuccessResetPassword.route) { SuccessResetPasswordScreen(navController) }
         }
     }
 }

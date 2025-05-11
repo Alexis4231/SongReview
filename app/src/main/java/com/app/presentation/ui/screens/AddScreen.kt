@@ -59,17 +59,18 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.presentation.viewmodel.DeezerAlbumsViewModel
+import com.app.presentation.viewmodel.DeezerAlbumViewModel
 import com.app.presentation.viewmodel.DeezerArtistsViewModel
-import com.app.presentation.viewmodel.GenresViewModel
-import com.app.presentation.viewmodel.SongsViewModel
+import com.app.presentation.viewmodel.DeezerGenreViewModel
+import com.app.presentation.viewmodel.DeezerGenresViewModel
+import com.app.presentation.viewmodel.DeezerSongsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), songsViewModel: SongsViewModel = viewModel(), albumsViewModel: DeezerAlbumsViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
+fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), deezerSongsViewModel: DeezerSongsViewModel = viewModel(), deezerAlbumViewModel: DeezerAlbumViewModel = viewModel(), deezerGenreViewModel: DeezerGenreViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
-    val genres by genresViewModel.genres.collectAsState()
+    val genres by deezerGenresViewModel.genres.collectAsState()
     var selectedStyle by remember { mutableStateOf("Seleccionar estilo") }
     var expanded by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
@@ -79,29 +80,45 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
     var songSelectedState by remember { mutableStateOf(false) }
     var artistSelectedState by remember { mutableStateOf(false) }
     val suggestionsArtists by deezerArtistsViewModel.artists.collectAsState()
-    val suggestionsSongs by songsViewModel.songs.collectAsState()
+    val suggestionsSongs by deezerSongsViewModel.songs.collectAsState()
     var isSuggestionArtistsVisible by remember { mutableStateOf(false) }
     var isSuggestionSongsVisible by remember { mutableStateOf(false) }
     var songTextFieldPositionY by remember { mutableStateOf(0f) }
     var songTextFieldHeight by remember { mutableStateOf(0f) }
     var artistTextFieldPositionY by remember { mutableStateOf(0f) }
     var artistTextFieldHeight by remember { mutableStateOf(0f) }
-    val albums by albumsViewModel.albums.collectAsState()
-    var currentPageArtist by remember { mutableStateOf(1) }
     var currentPageSongs by remember { mutableStateOf(1) }
+    val album by deezerAlbumViewModel.album.collectAsState()
+    val genre by deezerGenreViewModel.genre.collectAsState()
+    var cardBlockedArtist by remember { mutableStateOf(false) }
+    var cardBlockedStyle by remember { mutableStateOf(false) }
+    var count by remember { mutableStateOf(0) }
+
 
     LaunchedEffect(artist) {
         if (artist.isNotBlank()) {
-            deezerArtistsViewModel.loadArtists(artist, currentPageArtist)
+            deezerArtistsViewModel.loadArtists(artist, 0)
             isSuggestionArtistsVisible = true
         } else {
             isSuggestionArtistsVisible = false
         }
     }
 
+    LaunchedEffect(album){
+        album?.id?.let {albumId ->
+            deezerGenreViewModel.loadGenre(albumId)
+        }
+    }
+
+    LaunchedEffect("${count}-${genre?.id}") {
+        genre?.let{
+            selectedStyle = it.name
+        }
+    }
+
     LaunchedEffect(song) {
         if (song.isNotBlank()) {
-            songsViewModel.loadSongs(song, currentPageSongs)
+            deezerSongsViewModel.loadSongs(song, 0)
             isSuggestionSongsVisible = true
         } else {
             isSuggestionSongsVisible = false
@@ -110,8 +127,10 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
 
     LaunchedEffect(Unit) {
         if (genres.isEmpty()) {
-            genresViewModel.loadGenres()
+            deezerGenresViewModel.loadGenres()
         }
+        selectedStyle = "Seleccionar estilo"
+        cardBlockedStyle = false
     }
 
     Column(
@@ -247,12 +266,18 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .clickable {
+                                                            count++
                                                             song = suggestion.title
                                                             isSuggestionSongsVisible = false
                                                             onSearchSong(suggestion.title)
                                                             songSelectedState = true
                                                             artist = suggestion.artist.name
                                                             artistSelectedState = true
+                                                            deezerAlbumViewModel.loadAlbum(
+                                                                suggestion.artist.id
+                                                            )
+                                                            cardBlockedArtist = true
+                                                            cardBlockedStyle = true
                                                         }
                                                         .padding(12.dp),
                                                     color = Color.Black
@@ -286,7 +311,12 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                             )
                             IconButton(onClick = {
                                 songSelectedState = false
+                                artistSelectedState = false
+                                artist = ""
+                                selectedStyle = "Seleccionar estilo"
                                 song = ""
+                                cardBlockedArtist = false
+                                cardBlockedStyle = false
                             }) {
                                 Icon(
                                     imageVector = Icons.Outlined.Cancel,
@@ -377,6 +407,8 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                                     .distinctBy { it.name }
                                 val density = LocalDensity.current
                                 val offsetY = with(density) { artistTextFieldHeight.toDp() }
+                                val album = deezerAlbumViewModel.album.collectAsState()
+                                val genre = deezerGenreViewModel.genre.collectAsState()
 
                                 Popup(
                                     alignment = Alignment.TopStart,
@@ -403,10 +435,15 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .clickable {
+                                                            count++
                                                             artist = suggestion.name
                                                             isSuggestionArtistsVisible = false
                                                             onSearchArtist(suggestion.name)
                                                             artistSelectedState = true
+                                                            deezerAlbumViewModel.loadAlbum(
+                                                                suggestion.id
+                                                            )
+                                                            cardBlockedStyle = true
                                                         }
                                                         .padding(12.dp),
                                                     color = Color.Black
@@ -438,15 +475,19 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.White
                             )
-                            IconButton(onClick = {
-                                artistSelectedState = false
-                                artist = ""
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Cancel,
-                                    contentDescription = "Cancel",
-                                    tint = Color.White,
-                                )
+                            if(!cardBlockedArtist) {
+                                IconButton(onClick = {
+                                    artistSelectedState = false
+                                    artist = ""
+                                    cardBlockedStyle = false
+                                    selectedStyle = "Seleccionar estilo"
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Cancel,
+                                        contentDescription = "Cancel",
+                                        tint = Color.White,
+                                    )
+                                }
                             }
                         }
                     }
@@ -530,12 +571,14 @@ fun AddScreen(genresViewModel: GenresViewModel = viewModel(), deezerArtistsViewM
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.White
                             )
-                            IconButton(onClick = {selectedStyle = "Seleccionar estilo"}) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Cancel,
-                                    contentDescription = "Cancel",
-                                    tint = Color.White,
-                                )
+                            if(!cardBlockedStyle) {
+                                IconButton(onClick = { selectedStyle = "Seleccionar estilo" }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Cancel,
+                                        contentDescription = "Cancel",
+                                        tint = Color.White,
+                                    )
+                                }
                             }
                         }
                     }

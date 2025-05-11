@@ -8,16 +8,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class GenresViewModel : ViewModel() {
-    private val _genres = MutableStateFlow<List<Genre>>(emptyList())
-    val genres: StateFlow<List<Genre>> = _genres
-
-    fun loadGenres(){
+class DeezerGenreViewModel : ViewModel() {
+    private val _genre = MutableStateFlow<Genre?>(null)
+    val genre: StateFlow<Genre?> = _genre
+    fun loadGenre(albumId: Int){
         viewModelScope.launch {
             try{
-                val genresResponse = DeezerRetrofitClient.api.getGenres()
-                val genres = genresResponse.data.drop(1)
-                _genres.value = genres
+                val album = DeezerRetrofitClient.api.searchAlbumDetails(albumId)
+                val firstGenre = album.genres.data.firstOrNull()
+                _genre.value = firstGenre
+
             }catch (e: Exception){
                 e.printStackTrace()
             }

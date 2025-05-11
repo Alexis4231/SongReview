@@ -27,10 +27,11 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
     }
 
     override suspend fun delete(code: String): Boolean {
-        return try{
+        return try {
             usersCollection.document(code).delete().await()
             true
         }catch (e: Exception){
+            e.printStackTrace()
             false
         }
     }

@@ -1,27 +1,24 @@
 package com.app.presentation.ui.screens
 
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.presentation.viewmodel.DeezerAlbumsViewModel
+import com.app.presentation.viewmodel.DeezerAlbumViewModel
+import com.app.presentation.viewmodel.DeezerGenreViewModel
 
 @Composable
-fun AlbumsScreenByArtist(
-    artistId: Int,
-    viewModel: DeezerAlbumsViewModel = viewModel()
-) {
-    val albums by viewModel.albums.collectAsState()
+fun SearchScreen(deezerAlbumViewModel: DeezerAlbumViewModel = viewModel(), deezerGenreViewModel: DeezerGenreViewModel = viewModel()) {
+    val album = deezerAlbumViewModel.album.collectAsState()
+    val genre = deezerGenreViewModel.genre.collectAsState()
 
-    LaunchedEffect(artistId) {
-        viewModel.loadAlbums(artistId)
+    LaunchedEffect(Unit) {
+        deezerAlbumViewModel.loadAlbum(7194)
     }
 
-    LazyColumn {
-        items(albums) { album ->
 
-        }
+    if(album != null && genre != null){
+        Text(album.value?.title + " - " + genre.value?.name)
     }
 }

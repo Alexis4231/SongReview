@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -49,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.R
 import com.app.presentation.navigation.Screen
-import com.app.presentation.viewmodel.RegisterScreenViewModel
+import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -57,7 +56,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun RegisterScreen(navController: NavController,registerScreenViewModel: RegisterScreenViewModel = koinViewModel()) {
+fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel()) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -252,15 +251,15 @@ fun RegisterScreen(navController: NavController,registerScreenViewModel: Registe
                                 snackbarHostState.showSnackbar("La contraseña debe tener al menos 6 carácteres")
                             }
                         } else {
-                            registerScreenViewModel.avaliableUsername(
+                            userViewModel.avaliableUsername(
                                 name,
                                 {
                                     registerUser(email, password) { success ->
                                         scope.launch {
                                             if (success) {
-                                                registerScreenViewModel.setName(name)
-                                                registerScreenViewModel.setEmail(email)
-                                                registerScreenViewModel.save()
+                                                userViewModel.setName(name)
+                                                userViewModel.setEmail(email)
+                                                userViewModel.save()
                                                 navController.navigate(Screen.SuccesRegister.route)
 
                                             } else {

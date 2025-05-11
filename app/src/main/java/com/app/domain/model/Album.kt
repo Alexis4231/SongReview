@@ -6,5 +6,6 @@ data class AlbumResponse(
 
 data class Album(
     val id: Int,
-    val title: String
+    val title: String,
+    val genres: GenresResponse
 )

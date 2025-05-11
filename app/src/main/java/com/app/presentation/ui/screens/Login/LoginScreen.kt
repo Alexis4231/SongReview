@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.R
 import com.app.presentation.navigation.Screen
-import com.app.presentation.viewmodel.LoginScreenViewModel
+import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -55,7 +55,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LoginScreen(navController: NavController, loginScreenViewModel: LoginScreenViewModel = koinViewModel()) {
+fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel()) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var userOrMail by remember { mutableStateOf("") }
@@ -207,7 +207,7 @@ fun LoginScreen(navController: NavController, loginScreenViewModel: LoginScreenV
                         } else {
                             isLoading = true
                             if (!android.util.Patterns.EMAIL_ADDRESS.matcher(userOrMail).matches()){
-                                loginScreenViewModel.getEmail(userOrMail) { email ->
+                                userViewModel.getEmail(userOrMail) { email ->
                                     if (email != null) {
                                         loginUser(email, password) { success, errorMessage ->
                                             scope.launch {

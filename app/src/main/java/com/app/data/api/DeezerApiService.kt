@@ -1,5 +1,6 @@
 package com.app.data.api
 
+import com.app.domain.model.Album
 import com.app.domain.model.AlbumResponse
 import com.app.domain.model.ArtistResponse
 import com.app.domain.model.GenresResponse
@@ -26,8 +27,14 @@ interface DeezerApiService {
         @Query("index") page: Int = 0
     ): SongResponse
 
-    @GET("artist/{idAlbum}/albums")
-    suspend fun searchAlbums(
-        @Path("idAlbum") idAlbum: Int
+    @GET("artist/{idArtist}/albums")
+    suspend fun searchAlbum(
+        @Path("idArtist") idArtist: Int,
+        @Query("limit") limit: Int = 1
     ): AlbumResponse
+
+    @GET("album/{idAlbum}")
+    suspend fun searchAlbumDetails(
+        @Path("idAlbum") idAlbum: Int
+    ): Album
 }
