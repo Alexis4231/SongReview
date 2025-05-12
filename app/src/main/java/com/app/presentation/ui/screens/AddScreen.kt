@@ -30,6 +30,8 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +67,24 @@ import com.app.presentation.viewmodel.DeezerArtistsViewModel
 import com.app.presentation.viewmodel.DeezerGenreViewModel
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.DeezerSongsViewModel
+import com.app.presentation.viewmodel.SongDBViewModel
+import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(), deezerSongsViewModel: DeezerSongsViewModel = viewModel(), deezerAlbumViewModel: DeezerAlbumViewModel = viewModel(), deezerGenreViewModel: DeezerGenreViewModel = viewModel(), onSearchArtist: (String) -> Unit = {}, onSearchSong: (String) -> Unit = {}) {
+fun AddScreen(
+    deezerGenresViewModel: DeezerGenresViewModel = viewModel(),
+    deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(),
+    deezerSongsViewModel: DeezerSongsViewModel = viewModel(),
+    deezerAlbumViewModel: DeezerAlbumViewModel = viewModel(),
+    deezerGenreViewModel: DeezerGenreViewModel = viewModel(),
+    onSearchArtist: (String) -> Unit = {},
+    onSearchSong: (String) -> Unit = {},
+    songDBViewModel: SongDBViewModel = koinViewModel()
+){
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     var song by remember { mutableStateOf("") }
     var artist by remember { mutableStateOf("") }
     val genres by deezerGenresViewModel.genres.collectAsState()
@@ -87,7 +104,6 @@ fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezer
     var songTextFieldHeight by remember { mutableStateOf(0f) }
     var artistTextFieldPositionY by remember { mutableStateOf(0f) }
     var artistTextFieldHeight by remember { mutableStateOf(0f) }
-    var currentPageSongs by remember { mutableStateOf(1) }
     val album by deezerAlbumViewModel.album.collectAsState()
     val genre by deezerGenreViewModel.genre.collectAsState()
     var cardBlockedArtist by remember { mutableStateOf(false) }
@@ -146,6 +162,12 @@ fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezer
                 .background(Color(0xFF39D0B9)),
             contentAlignment = Alignment.Center
         ) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+            )
             Text(
                 text = "Añadir nueva canción",
                 fontSize = 30.sp,
@@ -407,8 +429,6 @@ fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezer
                                     .distinctBy { it.name }
                                 val density = LocalDensity.current
                                 val offsetY = with(density) { artistTextFieldHeight.toDp() }
-                                val album = deezerAlbumViewModel.album.collectAsState()
-                                val genre = deezerGenreViewModel.genre.collectAsState()
 
                                 Popup(
                                     alignment = Alignment.TopStart,
@@ -593,7 +613,20 @@ fun AddScreen(deezerGenresViewModel: DeezerGenresViewModel = viewModel(), deezer
             contentAlignment = Alignment.Center
         ) {
             Button(
-                onClick = {},
+                onClick = {
+                    if(!song.equals("") && !artist.equals("") && !selectedStyle.equals("")) {
+                        scope.launch {
+                            songDBViewModel.setTitle(song)
+                            songDBViewModel.setArtist(artist)
+                            songDBViewModel.setGenre(selectedStyle)
+                            songDBViewModel.save()
+                        }
+                    }else{
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Introduce todos los datos para añadir una canción")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = screenWidth * 0.04f)

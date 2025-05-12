@@ -17,14 +17,19 @@ import com.app.presentation.viewmodel.SpotifyTokenViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import GetUserDetailsViewModel
+import com.app.data.repository.SongFirestoreRepository
+import com.app.domain.repository.SongRepository
+import com.app.domain.usecase.song.SaveSongUseCase
+import com.app.presentation.viewmodel.SongDBViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module{
     single { FirebaseFirestore.getInstance() }
 
-    // data.repository repositorios
+    // Repository
     single<UserRepository> { UserFirestoreRepository(get()) }
+    single<SongRepository> { SongFirestoreRepository(get()) }
 
     // UseCase
     factory { GetUserByIdUseCase(get()) }
@@ -32,16 +37,19 @@ val appModule = module{
     factory { SaveUserUseCase(get()) }
     factory { DeleteUserUseCase(get()) }
     factory { GetEmailByNameUseCase(get()) }
+    factory { SaveSongUseCase(get()) }
+
 
     // ViewModel
-    viewModel{UserViewModel(get(),get(),get(),get())}
-    viewModel{SpotifyTokenViewModel()}
-    viewModel{NavBarViewModel()}
-    viewModel{GetUserDetailsViewModel()}
-    viewModel{DeezerSongsViewModel()}
-    viewModel{DeezerGenreViewModel()}
-    viewModel{DeezerGenresViewModel()}
-    viewModel{DeezerArtistsViewModel()}
-    viewModel{DeezerAlbumViewModel()}
+    viewModel { UserViewModel(get(),get(),get(),get()) }
+    viewModel { SpotifyTokenViewModel() }
+    viewModel { NavBarViewModel() }
+    viewModel { GetUserDetailsViewModel() }
+    viewModel { DeezerSongsViewModel() }
+    viewModel { DeezerGenreViewModel() }
+    viewModel { DeezerGenresViewModel() }
+    viewModel { DeezerArtistsViewModel() }
+    viewModel { DeezerAlbumViewModel() }
+    viewModel { SongDBViewModel(get()) }
 
 }

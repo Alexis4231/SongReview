@@ -1,6 +1,5 @@
 package com.app.presentation.navigation
 
-import HomeScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -43,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.app.presentation.ui.screens.AddScreen
+import com.app.presentation.ui.screens.HomeScreen
 import com.app.presentation.ui.screens.Login.LoginScreen
 import com.app.presentation.ui.screens.Login.RegisterScreen
 import com.app.presentation.ui.screens.Login.ResetPasswordScreen
