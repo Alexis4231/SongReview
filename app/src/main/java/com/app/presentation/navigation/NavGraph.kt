@@ -49,7 +49,7 @@ import com.app.presentation.ui.screens.Login.ResetPasswordScreen
 import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
 import com.app.presentation.ui.screens.Login.SuccessResetPasswordScreen
 import com.app.presentation.ui.screens.ProfileScreen
-import com.app.presentation.ui.screens.SearchScreen
+import com.app.presentation.ui.screens.ReviewsScreen
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -63,7 +63,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
         Screen.SuccesRegister.route,
         Screen.ResetPassword.route,
         Screen.SuccessResetPassword.route,
-        Screen.Search.route
+        Screen.Reviews.route
     )
     val navController = rememberNavController()
     val systemUiController = rememberSystemUiController()
@@ -98,7 +98,10 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             composable(Screen.SuccesRegister.route) { SuccessRegisterScreen(navController) }
             composable(Screen.Home.route) { HomeScreen(navController) }
             composable(Screen.Add.route) { AddScreen() }
-            composable(Screen.Search.route) { SearchScreen() }
+            composable(Screen.Reviews.route) { backStackEntry ->
+                val code = backStackEntry.arguments?.getString("songCode")
+                ReviewsScreen(navController, code)
+            }
             composable(Screen.Profile.route) { ProfileScreen(navController, navBarViewModel) }
             composable(Screen.ResetPassword.route) { ResetPasswordScreen(navController) }
             composable(Screen.SuccessResetPassword.route) { SuccessResetPasswordScreen(navController) }
@@ -114,7 +117,6 @@ fun BottomNavigationBar(navController: NavController, navBarViewModel: NavBarVie
     val items = listOf(
         Triple(Screen.Home, Icons.Default.MusicNote,"Inicio"),
         Triple(Screen.Add, Icons.Default.Add,"Añadir"),
-        Triple(Screen.Search, Icons.Default.Search, "Buscar"),
         Triple(Screen.Profile, Icons.Default.Person, "Perfil")
     )
     AnimatedVisibility(

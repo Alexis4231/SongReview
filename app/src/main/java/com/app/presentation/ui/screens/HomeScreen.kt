@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
@@ -47,8 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.app.domain.model.Genre
-import com.app.presentation.viewmodel.DeezerGenreViewModel
+import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerGenresViewModel
+import com.app.presentation.viewmodel.SongDBViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -100,7 +103,7 @@ fun HomeScreen(navController: NavController) {
         }
 
         when (selectedProfileItem) {
-            0 -> listSongsContent()
+            0 -> listSongsContent(navController)
             1 -> listArtistsContent()
             2 -> listProfilesContent()
         }
@@ -210,19 +213,26 @@ fun HomeHeader(deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
 }
 
 @Composable
-fun listSongsContent(){
+fun listSongsContent(navController: NavController, songDBViewModel: SongDBViewModel = koinViewModel()){
+    val songs by songDBViewModel.songs.collectAsState()
+
+    LaunchedEffect(Unit) {
+        songDBViewModel.getSongs()
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        items(50) { index ->
+        items(songs) { song ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                onClick = { navController.navigate(Screen.Reviews.createRoute(song.code)) }
             ) {
                 Text(
-                    text = "Canción #$index",
+                    text = song.title + " - " + song.artist + " (" + song.genre + ")",
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -241,7 +251,7 @@ fun listArtistsContent(){
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Text(
                     text = "Artista #$index",

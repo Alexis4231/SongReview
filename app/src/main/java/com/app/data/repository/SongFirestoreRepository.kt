@@ -1,6 +1,8 @@
 package com.app.data.repository
 
+import com.app.domain.model.Song
 import com.app.domain.model.SongDB
+import com.app.domain.model.User
 import com.app.domain.repository.SongRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -14,6 +16,24 @@ class SongFirestoreRepository(firestore: FirebaseFirestore): SongRepository {
             true
         }catch (e: Exception){
             false
+        }
+    }
+
+    override suspend fun getSongs(): List<SongDB> {
+        return try{
+            val documentSnapshot = songsCollection.get().await()
+            documentSnapshot.toObjects(SongDB::class.java)
+        }catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override suspend fun getByCode(code: String): SongDB? {
+        return try{
+            val documentSnapshot = songsCollection.document(code).get().await()
+            documentSnapshot.toObject(SongDB::class.java)
+        }catch (e: Exception){
+            null
         }
     }
 }

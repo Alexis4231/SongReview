@@ -29,6 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,11 +43,18 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.app.R
-import com.app.presentation.ui.theme.SongReviewTheme
+import com.app.presentation.viewmodel.SongDBViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SearchScreen() {
+fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel()) {
+    val song by songDBViewModel.song.collectAsState()
+
+    LaunchedEffect(Unit) {
+        code?.let { songDBViewModel.getSongByCode(it) }
+    }
 
     Column(
         modifier = Modifier
@@ -53,18 +62,16 @@ fun SearchScreen() {
             .background(Color(0xFF585D5F)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SongHeader()
-        SongCard("titulo","artista","genero",2)
-        CardPublishReview{ texto, estrellas ->
-            println("Reseña publicada:")
-            println("Texto: $texto")
-            println("Estrellas: $estrellas")
+        SongHeader(song.title)
+        if (code != null) {
+            SongCard(song.title,song.artist,song.genre,2)
         }
+        CardPublishReview()
     }
 }
 
 @Composable
-fun SongHeader(){
+fun SongHeader(title: String){
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -72,7 +79,7 @@ fun SongHeader(){
             .fillMaxWidth()
             .padding(vertical = 10.dp)
     ) {
-        Text(text= "Título", fontSize = 30.sp, color = Color.White)
+        Text(text= title, fontSize = 30.sp, color = Color.White)
     }
 }
 
@@ -98,7 +105,7 @@ fun SongCard(
                verticalAlignment = Alignment.CenterVertically
            ){
                Text(
-                   text = "Titulo: ${title}.",
+                   text = "Titulo: ${title}",
                    color = Color.White,
                    fontSize = 16.sp
                )
@@ -170,9 +177,7 @@ fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String){
 }
 
 @Composable
-fun CardPublishReview(
-    onPublish: (String, Int) -> Unit
-){
+fun CardPublishReview(){
     var textReview by remember { mutableStateOf(TextFieldValue("")) }
     var punctuation by remember { mutableStateOf(0) }
 
@@ -233,7 +238,6 @@ fun CardPublishReview(
 
             Button(
                 onClick = {
-                    onPublish(textReview.text, punctuation)
                     textReview = TextFieldValue("")
                     punctuation = 0
                 },
@@ -248,14 +252,5 @@ fun CardPublishReview(
                 Text("Publicar")
             }
         }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SongReviewTheme {
-        SearchScreen()
     }
 }

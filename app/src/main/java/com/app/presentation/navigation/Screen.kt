@@ -6,7 +6,9 @@ sealed class Screen(val route: String) {
     data object SuccesRegister: Screen("successregister")
     data object Home: Screen("home")
     data object Add: Screen("add")
-    data object Search: Screen("search")
+    data object Reviews: Screen("reviews/{songCode}"){
+        fun createRoute(songCode: String) = "reviews/$songCode"
+    }
     data object Profile: Screen("profile")
     data object ResetPassword: Screen("resetpassword")
     data object SuccessResetPassword: Screen("successresetpassword")
