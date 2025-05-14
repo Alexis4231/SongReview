@@ -6,11 +6,11 @@ import java.util.Date
 
 data class Review(
     @DocumentId val code: String = "",
-    val codUser: String,
-    val codSong: String,
+    val codeUser: String,
+    val codeSong: String,
     @ServerTimestamp val creationDate: Date? = null,
     val rating: Int = 0,
     val comment: String = ""
 ) {
-    constructor(): this(codUser = "", codSong = "", rating = 0, comment = "")
+    constructor(): this(codeUser = "", codeSong = "", rating = 0, comment = "")
 }

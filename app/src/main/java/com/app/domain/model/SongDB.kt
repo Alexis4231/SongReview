@@ -7,6 +7,4 @@ data class SongDB(
     val title: String = "",
     val artist: String = "",
     val genre: String = "",
-) {
-    constructor(): this(title = "", artist="", genre = "")
-}
+)

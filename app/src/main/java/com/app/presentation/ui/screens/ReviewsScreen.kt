@@ -1,11 +1,11 @@
 package com.app.presentation.ui.screens
 
-import android.os.Build
+import GetUserDetailsViewModel
 import androidx.annotation.DrawableRes
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,20 +13,28 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,44 +42,99 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.R
+import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.font.FontFamily
+import com.app.domain.model.Review
+import com.app.domain.model.User
+import com.app.presentation.viewmodel.UserViewModel
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 @Composable
-fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel()) {
+fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel(), reviewViewModel: ReviewViewModel = koinViewModel(), userViewModel: UserViewModel = koinViewModel() ) {
     val song by songDBViewModel.song.collectAsState()
+    val reviews by reviewViewModel.reviews.collectAsState()
+    var snackbarHostState = remember { SnackbarHostState() }
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
     LaunchedEffect(Unit) {
         code?.let { songDBViewModel.getSongByCode(it) }
     }
 
+    LaunchedEffect(Unit) {
+        code?.let { reviewViewModel.getReviewByCodeSong(it) }
+    }
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF585D5F)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        SongHeader(song.title)
-        if (code != null) {
-            SongCard(song.title,song.artist,song.genre,2)
+            .background(Color(0xFF585D5F))
+            .padding(0.dp,0.dp,0.dp,screenHeight*0.08f)
+    ){
+        snackbarHostState = SongHeader(song.title)
+        LazyColumn (
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            item {
+                code?.let {
+                    SongCard(song.title, song.artist, song.genre, 2)
+                    CardPublishReview(it, snackbarHostState)
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp, horizontal = 10.dp)
+                ) {
+                    Text(text = "Reseñas", fontSize = 30.sp, color = Color.White)
+                }
+            }
+
+            items(reviews) { review ->
+                val user = userViewModel.user.collectAsState()
+                LaunchedEffect(Unit) {
+                    userViewModel.getUserByCode(review.codeUser)
+                }
+                CardReviews(user.value, review)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
-        CardPublishReview()
     }
 }
 
 @Composable
-fun SongHeader(title: String){
+fun SongHeader(title: String): SnackbarHostState{
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth()
+    )
+
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
@@ -81,6 +144,7 @@ fun SongHeader(title: String){
     ) {
         Text(text= title, fontSize = 30.sp, color = Color.White)
     }
+    return snackbarHostState
 }
 
 @Composable
@@ -177,9 +241,15 @@ fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String){
 }
 
 @Composable
-fun CardPublishReview(){
+fun CardPublishReview(code: String, snackbarHostState: SnackbarHostState, reviewViewModel: ReviewViewModel = koinViewModel(), getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),){
+    LaunchedEffect(Unit) {
+        getUserDetailsViewModel.loadUserData()
+    }
+    val scope = rememberCoroutineScope()
     var textReview by remember { mutableStateOf(TextFieldValue("")) }
     var punctuation by remember { mutableStateOf(0) }
+    val user = getUserDetailsViewModel.user.value
+    var showDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -238,8 +308,27 @@ fun CardPublishReview(){
 
             Button(
                 onClick = {
-                    textReview = TextFieldValue("")
-                    punctuation = 0
+                    if(textReview.text.isEmpty()){
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Introduce un comentario")
+                        }
+                    }else if(punctuation == 0){
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Introduce una puntuación")
+                        }
+                    }else {
+                        if (user != null) {
+                            reviewViewModel.setCodeUser(user.code)
+                            reviewViewModel.setCodeSong(code)
+                            reviewViewModel.setRating(punctuation)
+                            reviewViewModel.setComment(textReview.text)
+                            reviewViewModel.save()
+                            textReview = TextFieldValue("")
+                            punctuation = 0
+                        } else {
+                            showDialog = true
+                        }
+                    }
                 },
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
@@ -252,5 +341,83 @@ fun CardPublishReview(){
                 Text("Publicar")
             }
         }
+        showErrorPopup(showError = showDialog, message = "Usuario no encontrado") {
+            showDialog = false
+        }
+    }
+}
+
+@Composable
+fun CardReviews(user: User, review: Review){
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        shape = CircleShape,
+                        color = Color.White
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        Row {
+                            repeat(5) { index ->
+                                Icon(
+                                    imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                    contentDescription = "Star",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = review.comment,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Serif
+                        )
+                    }
+                }
+            }
+}
+
+@Composable
+fun showErrorPopup(
+    showError: Boolean,
+    message: String,
+    onClose: () -> Unit
+) {
+    if(showError){
+        AlertDialog(
+            onDismissRequest = onClose,
+            title = { Text("Error") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = onClose) {
+                    Text("Vale")
+                }
+            }
+        )
     }
 }

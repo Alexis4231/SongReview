@@ -7,6 +7,4 @@ data class Request(
     val codeIssuer: String,
     val codeReceiver: String,
     val status: String
-){
-    constructor(): this(codeIssuer="",codeReceiver="",status="")
-}
+)

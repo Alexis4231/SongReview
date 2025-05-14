@@ -6,6 +6,4 @@ data class User(
     @DocumentId val code: String = "",
     val name: String = "",
     val email: String = ""
-){
-    constructor() : this(name = "", email = "")
-}
+)

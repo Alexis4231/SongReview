@@ -60,6 +60,7 @@ fun HomeScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(0.dp,0.dp,0.dp)
             .background(Color(0xFF585D5F)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

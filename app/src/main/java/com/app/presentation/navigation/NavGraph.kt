@@ -63,7 +63,6 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
         Screen.SuccesRegister.route,
         Screen.ResetPassword.route,
         Screen.SuccessResetPassword.route,
-        Screen.Reviews.route
     )
     val navController = rememberNavController()
     val systemUiController = rememberSystemUiController()
@@ -91,7 +90,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
         )
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Login.route,
         ) {
             composable(Screen.Login.route) { LoginScreen(navController) }
             composable(Screen.Register.route) { RegisterScreen(navController) }
