@@ -57,14 +57,7 @@ val appModule = module{
 
     // ViewModel
     viewModel { UserViewModel(get(),get(),get(),get(),get()) }
-    viewModel { SpotifyTokenViewModel() }
-    viewModel { NavBarViewModel() }
     viewModel { GetUserDetailsViewModel() }
-    viewModel { DeezerSongsViewModel() }
-    viewModel { DeezerGenreViewModel() }
-    viewModel { DeezerGenresViewModel() }
-    viewModel { DeezerArtistsViewModel() }
-    viewModel { DeezerAlbumViewModel() }
     viewModel { SongDBViewModel(get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get()) }
 }

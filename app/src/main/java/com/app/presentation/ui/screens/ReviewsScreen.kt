@@ -1,6 +1,8 @@
 package com.app.presentation.ui.screens
 
 import GetUserDetailsViewModel
+import android.content.Intent
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +15,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -60,15 +61,20 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.domain.model.Review
 import com.app.domain.model.User
+import com.app.presentation.navigation.Screen
+import com.app.presentation.viewmodel.DeezerSongViewModel
+import com.app.presentation.viewmodel.SpotifyLinkViewModel
+import com.app.presentation.viewmodel.SpotifyTokenViewModel
 import com.app.presentation.viewmodel.UserViewModel
+import com.app.presentation.viewmodel.YoutubeLinkViewModel
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel(), reviewViewModel: ReviewViewModel = koinViewModel(), userViewModel: UserViewModel = koinViewModel() ) {
@@ -86,6 +92,8 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
         code?.let { reviewViewModel.getReviewByCodeSong(it) }
     }
 
+
+
     Column(
         modifier = Modifier
             .background(Color(0xFF585D5F))
@@ -100,8 +108,13 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
         ){
             item {
                 code?.let {
-                    SongCard(song.title, song.artist, song.genre, 2)
-                    CardPublishReview(it, snackbarHostState)
+                    val rating = if(reviews.isNotEmpty()) {
+                        reviews.map { it.rating }.average().roundToInt()
+                    }else {
+                        0
+                    }
+                    SongCard(song.title, song.artist, song.genre, rating)
+                    CardPublishReview(it, snackbarHostState, navController)
                 }
 
                 Row(
@@ -152,8 +165,31 @@ fun SongCard(
     title: String,
     artist: String,
     genre: String,
-    rating: Int
+    rating: Int,
+    deezerSongViewModel: DeezerSongViewModel = viewModel(),
+    spotifyLinkViewModel: SpotifyLinkViewModel = viewModel(),
+    spotifyTokenViewModel: SpotifyTokenViewModel = viewModel(),
+    youtubeLinkViewModel: YoutubeLinkViewModel = viewModel()
 ){
+
+    val deezerSong = deezerSongViewModel.song.collectAsState()
+    val spotifyLink by spotifyLinkViewModel.spotifyLink.collectAsState()
+    val spotifyToken = spotifyTokenViewModel.token.collectAsState()
+    val youtubeLink by youtubeLinkViewModel.youtubeLink.collectAsState()
+
+    LaunchedEffect(Unit) {
+        spotifyTokenViewModel.loadToken()
+    }
+
+    LaunchedEffect(artist) {
+        deezerSongViewModel.loadSong("""track:"$title" artist:"$artist"""")
+        youtubeLinkViewModel.loadLink("$artist  $title")
+    }
+
+    LaunchedEffect(spotifyToken.value) {
+        spotifyToken.value?.let { spotifyLinkViewModel.loadLink(it.access_token,""""track:"$title" artist:"$artist"""") }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -200,8 +236,8 @@ fun SongCard(
                    .fillMaxWidth(),
                horizontalArrangement = Arrangement.SpaceBetween
            ){
-               MusicPlatformButton(R.drawable.spotify , "Spotify")
-               MusicPlatformButton(R.drawable.deezer , "Deezer")
+               spotifyLink?.let { MusicPlatformButton(R.drawable.spotify , "Spotify", it.spotify) }
+               deezerSong.value?.let { MusicPlatformButton(R.drawable.deezer , "Deezer", it.link) }
            }
 
            Spacer(modifier = Modifier.height(8.dp))
@@ -211,18 +247,21 @@ fun SongCard(
                    .fillMaxWidth(),
                horizontalArrangement = Arrangement.SpaceBetween
            ){
-               MusicPlatformButton(R.drawable.amazon , "Amazon Music")
-               MusicPlatformButton(R.drawable.youtube , "Youtube")
+               MusicPlatformButton(R.drawable.amazon , "Amazon Music", "https://music.amazon.com/search/"+artist.replace(" ","+")+"+"+title.replace(" ","+"))
+               youtubeLink?.let { MusicPlatformButton(R.drawable.youtube , "Youtube", "https://www.youtube.com/watch?v="+it.videoId) }
            }
-
        }
     }
 }
 
 @Composable
-fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String){
+fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String, link: String){
+    val context = LocalContext.current
     Button(
-        onClick = {},
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+            context.startActivity(intent)
+        },
         shape = RoundedCornerShape(20.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
         modifier = Modifier
@@ -241,7 +280,13 @@ fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String){
 }
 
 @Composable
-fun CardPublishReview(code: String, snackbarHostState: SnackbarHostState, reviewViewModel: ReviewViewModel = koinViewModel(), getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),){
+fun CardPublishReview(
+    code: String,
+    snackbarHostState: SnackbarHostState,
+    navController: NavController,
+    reviewViewModel: ReviewViewModel = koinViewModel(),
+    getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
+){
     LaunchedEffect(Unit) {
         getUserDetailsViewModel.loadUserData()
     }
@@ -325,6 +370,10 @@ fun CardPublishReview(code: String, snackbarHostState: SnackbarHostState, review
                             reviewViewModel.save()
                             textReview = TextFieldValue("")
                             punctuation = 0
+                            navController.navigate(Screen.Reviews.createRoute(code)) {
+                                popUpTo(Screen.Reviews.createRoute(code)) { inclusive = true }
+                            }
+
                         } else {
                             showDialog = true
                         }

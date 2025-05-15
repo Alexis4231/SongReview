@@ -6,5 +6,6 @@ data class SongResponse(
 
 data class Song(
     val title: String,
-    val artist: Artist
+    val artist: Artist,
+    val link: String,
 )

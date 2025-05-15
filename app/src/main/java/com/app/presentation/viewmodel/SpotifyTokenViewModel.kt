@@ -16,7 +16,6 @@ class SpotifyTokenViewModel : ViewModel() {
         viewModelScope.launch {
             try{
                 val token = SpotifyRetrofitAuth.api.getToken()
-                Log.d("SpotifyViewModel", "Token recibido: ${token.access_token}")
                 _token.value = token
             }catch (e: Exception){
                 e.printStackTrace()
