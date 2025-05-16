@@ -96,7 +96,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             composable(Screen.Register.route) { RegisterScreen(navController) }
             composable(Screen.SuccesRegister.route) { SuccessRegisterScreen(navController) }
             composable(Screen.Home.route) { HomeScreen(navController) }
-            composable(Screen.Add.route) { AddScreen() }
+            composable(Screen.Add.route) { AddScreen(navController) }
             composable(Screen.Reviews.route) { backStackEntry ->
                 val code = backStackEntry.arguments?.getString("songCode")
                 ReviewsScreen(navController, code)

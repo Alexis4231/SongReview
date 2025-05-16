@@ -373,7 +373,6 @@ fun CardPublishReview(
                             navController.navigate(Screen.Reviews.createRoute(code)) {
                                 popUpTo(Screen.Reviews.createRoute(code)) { inclusive = true }
                             }
-
                         } else {
                             showDialog = true
                         }

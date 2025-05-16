@@ -40,10 +40,11 @@ class SongDBViewModel(
         )
     }
 
-    fun save() {
+    fun save():String {
         viewModelScope.launch {
             saveSongUseCase(song.value)
         }
+        return song.value.code
     }
 
     fun getSongs(){

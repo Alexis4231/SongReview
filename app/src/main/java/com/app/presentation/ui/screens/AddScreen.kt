@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -33,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +64,8 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerAlbumViewModel
 import com.app.presentation.viewmodel.DeezerArtistsViewModel
 import com.app.presentation.viewmodel.DeezerGenreViewModel
@@ -74,6 +78,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddScreen(
+    navController: NavController,
     deezerGenresViewModel: DeezerGenresViewModel = viewModel(),
     deezerArtistsViewModel: DeezerArtistsViewModel = viewModel(),
     deezerSongsViewModel: DeezerSongsViewModel = viewModel(),
@@ -83,6 +88,7 @@ fun AddScreen(
     onSearchSong: (String) -> Unit = {},
     songDBViewModel: SongDBViewModel = koinViewModel()
 ){
+    var showDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var song by remember { mutableStateOf("") }
@@ -109,7 +115,12 @@ fun AddScreen(
     var cardBlockedArtist by remember { mutableStateOf(false) }
     var cardBlockedStyle by remember { mutableStateOf(false) }
     var count by remember { mutableStateOf(0) }
+    val songsDB by songDBViewModel.songs.collectAsState()
+    var addSong by remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        songDBViewModel.getSongs()
+    }
 
     LaunchedEffect(artist) {
         if (artist.isNotBlank()) {
@@ -596,7 +607,7 @@ fun AddScreen(
                                     Icon(
                                         imageVector = Icons.Outlined.Cancel,
                                         contentDescription = "Cancel",
-                                        tint = Color.White,
+                                        tint = Color.White
                                     )
                                 }
                             }
@@ -615,11 +626,25 @@ fun AddScreen(
             Button(
                 onClick = {
                     if(!song.equals("") && !artist.equals("") && !selectedStyle.equals("")) {
-                        scope.launch {
-                            songDBViewModel.setTitle(song)
-                            songDBViewModel.setArtist(artist)
-                            songDBViewModel.setGenre(selectedStyle)
-                            songDBViewModel.save()
+                        songsDB.forEach{songDB ->
+                            if(songDB.title.equals(song) && songDB.artist.equals(artist)){
+                                addSong = false
+                            }
+                        }
+                        if(addSong) {
+                            scope.launch {
+                                songDBViewModel.setTitle(song)
+                                songDBViewModel.setArtist(artist)
+                                songDBViewModel.setGenre(selectedStyle)
+                                var code = songDBViewModel.save()
+
+                                navController.navigate(Screen.Reviews.createRoute(code))
+                            }
+                        }else{
+                            scope.launch {
+                                showDialog = true
+                                addSong = true
+                            }
                         }
                     }else{
                         scope.launch {
@@ -643,3 +668,4 @@ fun AddScreen(
         }
     }
 }
+

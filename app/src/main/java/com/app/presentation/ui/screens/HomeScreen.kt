@@ -1,5 +1,6 @@
 package com.app.presentation.ui.screens
 
+import GetUserDetailsViewModel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -20,10 +21,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -51,6 +50,7 @@ import com.app.domain.model.Genre
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
+import com.app.presentation.viewmodel.UserViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -64,7 +64,11 @@ fun HomeScreen(navController: NavController) {
             .background(Color(0xFF585D5F)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        HomeHeader()
+        if (selectedProfileItem == 0) {
+            HomeHeader(true)
+        } else {
+            HomeHeader(false)
+        }
         NavigationBar(containerColor = Color(0xFF44A898)) {
             profileItems.forEachIndexed { index, item ->
                 NavigationBar(containerColor = Color(0xFF4FB3A4)) {
@@ -106,13 +110,13 @@ fun HomeScreen(navController: NavController) {
         when (selectedProfileItem) {
             0 -> listSongsContent(navController)
             1 -> listArtistsContent()
-            2 -> listProfilesContent()
+            2 -> listProfilesContent(navController)
         }
     }
 }
 
 @Composable
-fun HomeHeader(deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
+fun HomeHeader(showStyles: Boolean, deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
     var search by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val genres by deezerGenresViewModel.genres.collectAsState()
@@ -164,48 +168,50 @@ fun HomeHeader(deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
                 singleLine = true
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            if (showStyles) {
+                Spacer(modifier = Modifier.width(8.dp))
 
-            Box(
-                modifier = Modifier
-                    .height(40.dp)
-                    .width(1.dp)
-                    .background(Color.White)
-                    .align(Alignment.CenterVertically)
-            )
+                Box(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(1.dp)
+                        .background(Color.White)
+                        .align(Alignment.CenterVertically)
+                )
 
-            Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-            Box {
-                OutlinedButton(
-                    onClick = { expanded = true },
-                    modifier = Modifier.height(56.dp),
-                    border = BorderStroke(0.dp, Color.Transparent),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MusicNote,
-                        contentDescription = "Género"
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = selectedStyle)
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    allGenres.forEach { genre ->
-                        DropdownMenuItem(
-                            text = { Text(genre.name) },
-                            onClick = {
-                                selectedStyle = genre.name
-                                expanded = false
-                            }
+                Box {
+                    OutlinedButton(
+                        onClick = { expanded = true },
+                        modifier = Modifier.height(56.dp),
+                        border = BorderStroke(0.dp, Color.Transparent),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.White
                         )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MusicNote,
+                            contentDescription = "Género"
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = selectedStyle)
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        allGenres.forEach { genre ->
+                            DropdownMenuItem(
+                                text = { Text(genre.name) },
+                                onClick = {
+                                    selectedStyle = genre.name
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -266,24 +272,38 @@ fun listArtistsContent(){
 
 
 @Composable
-fun listProfilesContent(){
+fun listProfilesContent(navController: NavController, userViewModel: UserViewModel = koinViewModel(), userDetailsUserViewModel: GetUserDetailsViewModel = viewModel()){
+    val users by userViewModel.users.collectAsState()
+
+    LaunchedEffect(Unit) {
+        userDetailsUserViewModel.loadUserData()
+    }
+
+    val myUser by userDetailsUserViewModel.user
+
+    LaunchedEffect(Unit) {
+        userViewModel.getUsers()
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        items(50) { index ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Text(
-                    text = "Usuario #$index",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+        items(users) { user ->
+            if (user.name != myUser?.name) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    onClick = { }
+                ) {
+                    Text(
+                        text = user.name,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
 }
-

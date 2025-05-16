@@ -40,4 +40,17 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
             emptyList()
         }
     }
+
+    override suspend fun getReviewsByCodeUser(codeUser: String): List<Review> {
+        return try{
+            val querySnapshot = reviewsCollection
+                .whereEqualTo("codeUser",codeUser)
+                .orderBy("creationDate", Query.Direction.DESCENDING)
+                .get()
+                .await()
+            querySnapshot.toObjects(Review::class.java)
+        }catch (e: Exception){
+            emptyList()
+        }
+    }
 }

@@ -6,4 +6,5 @@ interface ReviewRepository {
     suspend fun save(review: Review): Boolean
     suspend fun getReviews(): List<Review>
     suspend fun getReviewsByCodeSong(codeSong: String): List<Review>
+    suspend fun getReviewsByCodeUser(codeUser: String): List<Review>
 }

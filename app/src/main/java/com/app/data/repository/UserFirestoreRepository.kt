@@ -1,8 +1,10 @@
 package com.app.data.repository
 
+import com.app.domain.model.SongDB
 import com.app.domain.model.User
 import com.app.domain.repository.UserRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
@@ -60,6 +62,18 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
         }catch (e: Exception){
             e.printStackTrace()
             ""
+        }
+    }
+
+    override suspend fun getUsers(): List<User> {
+        return try{
+            val documentSnapshot = usersCollection
+                .orderBy("creationDate", Query.Direction.DESCENDING)
+                .get().
+                await()
+            documentSnapshot.toObjects(User::class.java)
+        }catch (e: Exception) {
+            emptyList()
         }
     }
 }

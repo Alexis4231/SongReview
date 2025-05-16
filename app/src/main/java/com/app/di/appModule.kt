@@ -22,11 +22,13 @@ import com.app.data.repository.SongFirestoreRepository
 import com.app.domain.repository.ReviewRepository
 import com.app.domain.repository.SongRepository
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
+import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.review.SaveReviewUseCase
 import com.app.domain.usecase.song.GetSongByCodeUseCase
 import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
+import com.app.domain.usecase.user.GetUsersUseCase
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -46,18 +48,20 @@ val appModule = module{
     factory { SaveUserUseCase(get()) }
     factory { DeleteUserUseCase(get()) }
     factory { GetEmailByNameUseCase(get()) }
+    factory { GetUsersUseCase(get()) }
     factory { SaveSongUseCase(get()) }
     factory { GetSongsUseCase(get()) }
     factory { GetSongByCodeUseCase(get()) }
     factory { SaveReviewUseCase(get()) }
     factory { GetReviewsUseCase(get()) }
     factory { GetReviewsByCodeSongUseCase(get()) }
+    factory { GetReviewsByCodeUserUseCase(get()) }
 
 
 
     // ViewModel
-    viewModel { UserViewModel(get(),get(),get(),get(),get()) }
+    viewModel { UserViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get()) }
-    viewModel { ReviewViewModel(get(),get(),get()) }
+    viewModel { ReviewViewModel(get(),get(),get(),get()) }
 }

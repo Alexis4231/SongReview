@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.domain.model.Review
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
+import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.review.SaveReviewUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 class ReviewViewModel(
     private val saveReviewUseCase: SaveReviewUseCase,
     private val getReviewsUseCase: GetReviewsUseCase,
-    private val getReviewsByCodeSongUseCase: GetReviewsByCodeSongUseCase
+    private val getReviewsByCodeSongUseCase: GetReviewsByCodeSongUseCase,
+    private val getReviewsByCodeUserUseCase: GetReviewsByCodeUserUseCase
 ):ViewModel() {
     private val _review = MutableStateFlow(Review())
     val review: StateFlow<Review> = _review
@@ -61,6 +63,12 @@ class ReviewViewModel(
     fun getReviewByCodeSong(codeSong: String){
         viewModelScope.launch {
             _reviews.value = getReviewsByCodeSongUseCase(codeSong)
+        }
+    }
+
+    fun getReviewByCodeUser(codeUser: String){
+        viewModelScope.launch {
+            _reviews.value = getReviewsByCodeUserUseCase(codeUser)
         }
     }
 }

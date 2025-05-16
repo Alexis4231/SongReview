@@ -8,4 +8,5 @@ interface UserRepository {
     suspend fun delete(code: String): Boolean
     suspend fun existUsername(name: String): Boolean
     suspend fun getEmailByName(name:String): String
+    suspend fun getUsers(): List<User>
 }

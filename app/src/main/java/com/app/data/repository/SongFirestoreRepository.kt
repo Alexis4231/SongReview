@@ -5,6 +5,7 @@ import com.app.domain.model.SongDB
 import com.app.domain.model.User
 import com.app.domain.repository.SongRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 class SongFirestoreRepository(firestore: FirebaseFirestore): SongRepository {
@@ -21,7 +22,10 @@ class SongFirestoreRepository(firestore: FirebaseFirestore): SongRepository {
 
     override suspend fun getSongs(): List<SongDB> {
         return try{
-            val documentSnapshot = songsCollection.get().await()
+            val documentSnapshot = songsCollection
+                .orderBy("creationDate",Query.Direction.DESCENDING)
+                .get().
+                await()
             documentSnapshot.toObjects(SongDB::class.java)
         }catch (e: Exception) {
             emptyList()
