@@ -50,6 +50,8 @@ import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
 import com.app.presentation.ui.screens.Login.SuccessResetPasswordScreen
 import com.app.presentation.ui.screens.ProfileScreen
 import com.app.presentation.ui.screens.ReviewsScreen
+import com.app.presentation.ui.screens.SongAdded
+import com.app.presentation.ui.screens.SongNotAdded
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -104,6 +106,16 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             composable(Screen.Profile.route) { ProfileScreen(navController, navBarViewModel) }
             composable(Screen.ResetPassword.route) { ResetPasswordScreen(navController) }
             composable(Screen.SuccessResetPassword.route) { SuccessResetPasswordScreen(navController) }
+            composable(Screen.SongAdded.route) {backStackEntry ->
+                val name = backStackEntry.arguments?.getString("songName")
+                val artist = backStackEntry.arguments?.getString("songArtist")
+                SongAdded(navController,name,artist)
+            }
+            composable(Screen.SongNotAdded.route) {backStackEntry ->
+                val name = backStackEntry.arguments?.getString("songName")
+                val artist = backStackEntry.arguments?.getString("songArtist")
+                SongNotAdded(navController,name,artist)
+            }
         }
     }
 }

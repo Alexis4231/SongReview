@@ -6,4 +6,5 @@ interface SongRepository {
     suspend fun save(song: SongDB): Boolean
     suspend fun getSongs(): List<SongDB>
     suspend fun getByCode(code: String): SongDB?
+    suspend fun getCodeByTitleAndArtist(title: String, artist: String): String?
 }

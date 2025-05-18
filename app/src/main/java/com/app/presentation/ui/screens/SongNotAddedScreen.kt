@@ -1,0 +1,117 @@
+package com.app.presentation.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.app.presentation.navigation.Screen
+import com.app.presentation.viewmodel.SongDBViewModel
+import org.koin.androidx.compose.koinViewModel
+
+@Composable
+fun SongNotAdded(navController: NavController, songName: String?, artistName: String?, songDBViewModel: SongDBViewModel = koinViewModel()){
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
+    val density = LocalDensity.current.density
+
+    val code by songDBViewModel.code.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if(songName != null && artistName != null) {
+            songDBViewModel.getCodeByTitleAndArtist(songName, artistName)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xFF585D5F)),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Icon",
+                tint = Color.White,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = screenWidth*0.07f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Text(
+                text = "Esta canción ya existe",
+                color = Color.White,
+                fontSize = (8.5*density).sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Está cancion se encuentra en nuestra app",
+                color = Color.White,
+                fontSize = (6*density).sp
+            )
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = screenWidth * 0.07f),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(
+                onClick = {
+                    if(!code.isNullOrEmpty()){
+                        navController.navigate(Screen.Reviews.createRoute(code!!))
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = screenWidth * 0.04f)
+                    .align(Alignment.TopEnd),
+                shape = RoundedCornerShape(15.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FB3A4))
+            ) {
+                Text(
+                    text = "Ir a la reseña",
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(vertical = screenHeight*0.02f)
+                )
+            }
+        }
+    }
+}

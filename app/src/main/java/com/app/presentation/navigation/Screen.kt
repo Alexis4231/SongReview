@@ -12,4 +12,10 @@ sealed class Screen(val route: String) {
     data object Profile: Screen("profile")
     data object ResetPassword: Screen("resetpassword")
     data object SuccessResetPassword: Screen("successresetpassword")
+    data object SongAdded: Screen("songadded/{songName}-{songArtist}"){
+        fun createRoute(songName: String, songArtist: String) = "songadded/$songName-$songArtist"
+    }
+    data object SongNotAdded: Screen("songnotadded/{songName}-{songArtist}"){
+        fun createRoute(songName: String, songArtist: String) = "songnotadded/$songName-$songArtist"
+    }
 }

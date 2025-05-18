@@ -72,7 +72,10 @@ import com.app.presentation.viewmodel.DeezerGenreViewModel
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.DeezerSongsViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -636,14 +639,12 @@ fun AddScreen(
                                 songDBViewModel.setTitle(song)
                                 songDBViewModel.setArtist(artist)
                                 songDBViewModel.setGenre(selectedStyle)
-                                var code = songDBViewModel.save()
-
-                                navController.navigate(Screen.Reviews.createRoute(code))
+                                songDBViewModel.save()
+                                navController.navigate(Screen.SongAdded.createRoute(song,artist))
                             }
                         }else{
                             scope.launch {
-                                showDialog = true
-                                addSong = true
+                                navController.navigate(Screen.SongNotAdded.createRoute(song,artist))
                             }
                         }
                     }else{

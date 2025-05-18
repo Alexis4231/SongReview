@@ -21,13 +21,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.app.domain.model.User
 import com.app.presentation.viewmodel.NavBarViewModel
+import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import com.app.presentation.navigation.Screen
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun ProfileScreen(
@@ -84,7 +92,7 @@ fun ProfileScreen(
             }
 
             when (selectedProfileItem) {
-                0 -> ReviewsContent()
+                0 -> ReviewsContent(navController, user)
                 1 -> profileSettingsContent(navController,  user, userViewModel)
             }
         }
@@ -146,22 +154,68 @@ fun ProfileHeader(
 }
 
 @Composable
-fun ReviewsContent() {
+fun ReviewsContent(navController: NavController, user: User, reviewViewModel: ReviewViewModel = koinViewModel()) {
+    val reviews by reviewViewModel.reviews.collectAsState()
+    LaunchedEffect(Unit){
+        reviewViewModel.getReviewsByCodeUser(user.code)
+        println(user.code)
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        items(50) { index ->
+        items(reviews) { review ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    .padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7)),
+                onClick = { navController.navigate(Screen.Reviews.createRoute(review.codeSong)) }
             ) {
-                Text(
-                    text = "Item #$index",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Row(
+                    modifier = Modifier
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        shape = CircleShape,
+                        color = Color.White
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        Row {
+                            repeat(5) { index ->
+                                Icon(
+                                    imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                    contentDescription = "Star",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = review.comment,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontFamily = FontFamily.Serif
+                        )
+                    }
+                }
             }
         }
     }

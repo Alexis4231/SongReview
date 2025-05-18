@@ -66,9 +66,11 @@ class ReviewViewModel(
         }
     }
 
-    fun getReviewByCodeUser(codeUser: String){
+    fun getReviewsByCodeUser(codeUser: String){
         viewModelScope.launch {
+            println("Buscando reviews para codeUser = $codeUser")
             _reviews.value = getReviewsByCodeUserUseCase(codeUser)
+            println("cantidad de reviews encontradas ${_reviews.value.size}")
         }
     }
 }

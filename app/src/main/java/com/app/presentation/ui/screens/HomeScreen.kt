@@ -3,6 +3,7 @@ package com.app.presentation.ui.screens
 import GetUserDetailsViewModel
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ButtonDefaults
@@ -43,7 +46,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.app.domain.model.Genre
@@ -56,6 +63,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun HomeScreen(navController: NavController) {
     var selectedProfileItem by remember { mutableStateOf(0) }
+    var search by remember { mutableStateOf("") }
+    var selectedStyle by remember { mutableStateOf("Todos") }
     val profileItems = listOf("Canciones", "Artistas","Usuarios")
     Column(
         modifier = Modifier
@@ -65,9 +74,9 @@ fun HomeScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (selectedProfileItem == 0) {
-            HomeHeader(true)
+            HomeHeader(true, search, onSearchChange = { search = it }, selectedStyle, onSelectedStyleChange = { selectedStyle = it })
         } else {
-            HomeHeader(false)
+            HomeHeader(false, search, onSearchChange = { search = it }, selectedStyle, onSelectedStyleChange = { selectedStyle = it })
         }
         NavigationBar(containerColor = Color(0xFF44A898)) {
             profileItems.forEachIndexed { index, item ->
@@ -108,26 +117,29 @@ fun HomeScreen(navController: NavController) {
         }
 
         when (selectedProfileItem) {
-            0 -> listSongsContent(navController)
-            1 -> listArtistsContent()
-            2 -> listProfilesContent(navController)
+            0 -> listSongsContent(navController, search, selectedStyle)
+            1 -> listArtistsContent(navController, search)
+            2 -> listProfilesContent(navController, search)
         }
     }
 }
 
 @Composable
-fun HomeHeader(showStyles: Boolean, deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
-    var search by remember { mutableStateOf("") }
+fun HomeHeader(
+    showStyles: Boolean,
+    search: String,
+    onSearchChange: (String) -> Unit,
+    selectedStyle: String,
+    onSelectedStyleChange: (String) -> Unit,
+    deezerGenresViewModel: DeezerGenresViewModel = viewModel()){
     var expanded by remember { mutableStateOf(false) }
     val genres by deezerGenresViewModel.genres.collectAsState()
-    var selectedStyle by remember { mutableStateOf("Todos") }
     val allGenres = listOf(Genre(0,"Todos")) + genres
 
     LaunchedEffect(Unit) {
         if (genres.isEmpty()) {
             deezerGenresViewModel.loadGenres()
         }
-        selectedStyle = "Todos"
     }
 
     Surface(
@@ -144,7 +156,7 @@ fun HomeHeader(showStyles: Boolean, deezerGenresViewModel: DeezerGenresViewModel
         ) {
             TextField(
                 value = search,
-                onValueChange = { search = it },
+                onValueChange = onSearchChange,
                 placeholder = { Text("Buscar", color = Color.White) },
                 leadingIcon = {
                     Icon(
@@ -207,7 +219,7 @@ fun HomeHeader(showStyles: Boolean, deezerGenresViewModel: DeezerGenresViewModel
                             DropdownMenuItem(
                                 text = { Text(genre.name) },
                                 onClick = {
-                                    selectedStyle = genre.name
+                                    onSelectedStyleChange(genre.name)
                                     expanded = false
                                 }
                             )
@@ -220,17 +232,25 @@ fun HomeHeader(showStyles: Boolean, deezerGenresViewModel: DeezerGenresViewModel
 }
 
 @Composable
-fun listSongsContent(navController: NavController, songDBViewModel: SongDBViewModel = koinViewModel()){
+fun listSongsContent(
+    navController: NavController,
+    search: String,
+    selectedStyle: String,
+    songDBViewModel: SongDBViewModel = koinViewModel()){
     val songs by songDBViewModel.songs.collectAsState()
 
     LaunchedEffect(Unit) {
         songDBViewModel.getSongs()
     }
 
+    val filteredSongs = songs.filter {song ->
+        song.title.contains(search, ignoreCase = true) && (selectedStyle == "Todos" || song.genre.equals(selectedStyle, ignoreCase = true))
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-        items(songs) { song ->
+        items(filteredSongs) { song ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -249,30 +269,91 @@ fun listSongsContent(navController: NavController, songDBViewModel: SongDBViewMo
 }
 
 @Composable
-fun listArtistsContent(){
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(50) { index ->
-            Card(
+fun listArtistsContent(
+    navController: NavController,
+    search: String,
+    songDBViewModel: SongDBViewModel = koinViewModel()){
+        val density = LocalDensity.current.density
+        val songs by songDBViewModel.songs.collectAsState()
+
+        LaunchedEffect(Unit) {
+            songDBViewModel.getSongs()
+        }
+
+        val filteredArtist = if(search.length >= 1){
+            songs.filter {
+                it.artist.contains(search, ignoreCase = true)
+            }
+        }else{
+            emptyList()
+        }
+
+        if(search.length < 1) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    .fillMaxSize()
+                    .background(color = Color(0xFF585D5F)),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Artista #$index",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color.White,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Text(
+                        text = "Busca un artista",
+                        color = Color.White,
+                        fontSize = (10 * density).sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }else{
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+
+            ) {
+                items(filteredArtist) { song ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        onClick = { navController.navigate(Screen.Reviews.createRoute(song.code)) }
+                    ) {
+                        Text(
+                            text = song.artist + " - " + song.title,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
             }
         }
-    }
 }
 
 
 @Composable
-fun listProfilesContent(navController: NavController, userViewModel: UserViewModel = koinViewModel(), userDetailsUserViewModel: GetUserDetailsViewModel = viewModel()){
+fun listProfilesContent(
+    navController: NavController,
+    search: String,
+    userViewModel: UserViewModel = koinViewModel(),
+    userDetailsUserViewModel: GetUserDetailsViewModel = viewModel()
+){
+    val density = LocalDensity.current.density
     val users by userViewModel.users.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -285,23 +366,66 @@ fun listProfilesContent(navController: NavController, userViewModel: UserViewMod
         userViewModel.getUsers()
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(users) { user ->
-            if (user.name != myUser?.name) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    onClick = { }
-                ) {
-                    Text(
-                        text = user.name,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+    val filteredProfiles = if(search.length >= 1){
+        users.filter {
+            it.name.contains(search, ignoreCase = true)
+        }
+    }else{
+        emptyList()
+    }
+
+    if(search.length < 1){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Mood,
+                    contentDescription = "Mood",
+                    tint = Color.White,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(0.8f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "Busca un perfil",
+                    color = Color.White,
+                    fontSize = (10 * density).sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(filteredProfiles) { user ->
+                if (user.name != myUser?.name) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        onClick = { }
+                    ) {
+                        Text(
+                            text = user.name,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }

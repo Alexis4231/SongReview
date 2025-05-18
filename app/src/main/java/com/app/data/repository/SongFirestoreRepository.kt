@@ -24,8 +24,8 @@ class SongFirestoreRepository(firestore: FirebaseFirestore): SongRepository {
         return try{
             val documentSnapshot = songsCollection
                 .orderBy("creationDate",Query.Direction.DESCENDING)
-                .get().
-                await()
+                .get()
+                .await()
             documentSnapshot.toObjects(SongDB::class.java)
         }catch (e: Exception) {
             emptyList()
@@ -36,6 +36,24 @@ class SongFirestoreRepository(firestore: FirebaseFirestore): SongRepository {
         return try{
             val documentSnapshot = songsCollection.document(code).get().await()
             documentSnapshot.toObject(SongDB::class.java)
+        }catch (e: Exception){
+            null
+        }
+    }
+
+    override suspend fun getCodeByTitleAndArtist(title: String, artist: String): String? {
+        return try{
+            val documentSnapshot = songsCollection
+                .whereEqualTo("title",title)
+                .whereEqualTo("artist",artist)
+                .get()
+                .await()
+            if(!documentSnapshot.isEmpty){
+                val document = documentSnapshot.documents[0]
+                document.id
+            }else{
+                null
+            }
         }catch (e: Exception){
             null
         }

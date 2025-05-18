@@ -25,6 +25,7 @@ import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.review.SaveReviewUseCase
+import com.app.domain.usecase.song.GetCodeByTitleAndArtistUseCase
 import com.app.domain.usecase.song.GetSongByCodeUseCase
 import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
@@ -56,12 +57,13 @@ val appModule = module{
     factory { GetReviewsUseCase(get()) }
     factory { GetReviewsByCodeSongUseCase(get()) }
     factory { GetReviewsByCodeUserUseCase(get()) }
+    factory { GetCodeByTitleAndArtistUseCase(get()) }
 
 
 
     // ViewModel
     viewModel { UserViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
-    viewModel { SongDBViewModel(get(),get(),get()) }
+    viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get()) }
 }
