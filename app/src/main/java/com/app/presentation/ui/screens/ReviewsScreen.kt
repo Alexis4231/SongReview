@@ -63,6 +63,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.domain.model.Review
 import com.app.domain.model.User
@@ -92,12 +93,10 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
         code?.let { reviewViewModel.getReviewByCodeSong(it) }
     }
 
-
-
     Column(
         modifier = Modifier
+            .fillMaxSize()
             .background(Color(0xFF585D5F))
-            .padding(0.dp,0.dp,0.dp,screenHeight*0.08f)
     ){
         snackbarHostState = SongHeader(song.title)
         LazyColumn (
@@ -133,7 +132,6 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
                     userViewModel.getUserByCode(review.codeUser)
                 }
                 CardReviews(user.value, review)
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -155,7 +153,15 @@ fun SongHeader(title: String): SnackbarHostState{
             .fillMaxWidth()
             .padding(vertical = 10.dp)
     ) {
-        Text(text= title, fontSize = 30.sp, color = Color.White)
+        Text(
+            text= title,
+            fontSize = 30.sp,
+            color = Color.White,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center
+        )
     }
     return snackbarHostState
 }
@@ -196,61 +202,62 @@ fun SongCard(
             .padding(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF39D0B9)),
     ){
-       Column(
-           modifier = Modifier.padding(16.dp)
-       ){
-           Row(
-               modifier = Modifier.fillMaxWidth(),
-               horizontalArrangement = Arrangement.SpaceBetween,
-               verticalAlignment = Alignment.CenterVertically
-           ){
-               Text(
-                   text = "Titulo: ${title}",
-                   color = Color.White,
-                   fontSize = 16.sp
-               )
-               Row{
-                   repeat(5){index ->
-                       Icon(
-                           imageVector = if(index < rating) Icons.Default.Star else Icons.Default.StarBorder,
-                           contentDescription = "Rating",
-                           tint = Color.White
-                       )
-                   }
-               }
-           }
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ){
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(
+                    text = "Titulo: ${title}",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Row{
+                    repeat(5){index ->
+                        Icon(
+                            imageVector = if(index < rating) Icons.Default.Star else Icons.Default.StarBorder,
+                            contentDescription = "Rating",
+                            tint = Color.White
+                        )
+                    }
+                }
+            }
 
-           Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-           Row(
-               modifier = Modifier.fillMaxWidth(),
-               horizontalArrangement = Arrangement.SpaceBetween
-           ){
-               Text(text = "Artista: $artist", color = Color.White)
-               Text(text="Género: $genre", color = Color.White)
-           }
-           Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Text(text = "Artista: $artist", color = Color.White)
+                Text(text="Género: $genre", color = Color.White)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-           Row(
-               modifier = Modifier
-                   .fillMaxWidth(),
-               horizontalArrangement = Arrangement.SpaceBetween
-           ){
-               spotifyLink?.let { MusicPlatformButton(R.drawable.spotify , "Spotify", it.spotify) }
-               deezerSong.value?.let { MusicPlatformButton(R.drawable.deezer , "Deezer", it.link) }
-           }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                spotifyLink?.let { MusicPlatformButton(R.drawable.spotify , "Spotify", it.spotify) }
+                deezerSong.value?.let { MusicPlatformButton(R.drawable.deezer , "Deezer", it.link) }
+            }
 
-           Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-           Row(
-               modifier = Modifier
-                   .fillMaxWidth(),
-               horizontalArrangement = Arrangement.SpaceBetween
-           ){
-               MusicPlatformButton(R.drawable.amazon , "Amazon Music", "https://music.amazon.com/search/"+artist.replace(" ","+")+"+"+title.replace(" ","+"))
-               youtubeLink?.let { MusicPlatformButton(R.drawable.youtube , "Youtube", "https://www.youtube.com/watch?v="+it.videoId) }
-           }
-       }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                MusicPlatformButton(R.drawable.amazon , "Amazon\nMusic", "https://music.amazon.com/search/"+artist.replace(" ","+")+"+"+title.replace(" ","+"))
+                youtubeLink?.let { MusicPlatformButton(R.drawable.youtube , "Youtube", "https://www.youtube.com/watch?v="+it.videoId) }
+            }
+        }
     }
 }
 
@@ -266,7 +273,7 @@ fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String, link: String){
         colors = ButtonDefaults.buttonColors(containerColor = Color.White),
         modifier = Modifier
             .widthIn(min = 140.dp)
-            .height(48.dp)
+            .height(56.dp)
     ) {
         Icon(
             painter = painterResource(id = iconRes),
@@ -397,57 +404,57 @@ fun CardPublishReview(
 
 @Composable
 fun CardReviews(user: User, review: Review){
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7))
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = Color.White
             ) {
-                Row(
-                    modifier = Modifier
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        modifier = Modifier.size(40.dp),
-                        shape = CircleShape,
-                        color = Color.White
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
-                        Row {
-                            repeat(5) { index ->
-                                Icon(
-                                    imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
-                                    contentDescription = "Star",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                        Text(
-                            text = review.comment,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Serif
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Row {
+                    repeat(5) { index ->
+                        Icon(
+                            imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
+                            contentDescription = "Star",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
+                Text(
+                    text = review.comment,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Serif
+                )
             }
+        }
+    }
 }
 
 @Composable

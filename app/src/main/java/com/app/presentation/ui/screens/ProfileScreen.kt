@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.app.presentation.navigation.Screen
+import com.app.presentation.viewmodel.SongDBViewModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -158,7 +159,6 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
     val reviews by reviewViewModel.reviews.collectAsState()
     LaunchedEffect(Unit){
         reviewViewModel.getReviewsByCodeUser(user.code)
-        println(user.code)
     }
 
     LazyColumn(

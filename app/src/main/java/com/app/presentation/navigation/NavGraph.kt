@@ -52,6 +52,7 @@ import com.app.presentation.ui.screens.ProfileScreen
 import com.app.presentation.ui.screens.ReviewsScreen
 import com.app.presentation.ui.screens.SongAdded
 import com.app.presentation.ui.screens.SongNotAdded
+import com.app.presentation.ui.screens.SplashScreen
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -65,6 +66,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
         Screen.SuccesRegister.route,
         Screen.ResetPassword.route,
         Screen.SuccessResetPassword.route,
+        Screen.Splash.route
     )
     val navController = rememberNavController()
     val systemUiController = rememberSystemUiController()
@@ -85,15 +87,14 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
             }
         }
     ) { innerPadding ->
-        Box(
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Splash.route,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-        )
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Login.route,
         ) {
+            composable(Screen.Splash.route){ SplashScreen(navController) }
             composable(Screen.Login.route) { LoginScreen(navController) }
             composable(Screen.Register.route) { RegisterScreen(navController) }
             composable(Screen.SuccesRegister.route) { SuccessRegisterScreen(navController) }

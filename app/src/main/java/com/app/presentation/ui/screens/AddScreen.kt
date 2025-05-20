@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,10 +72,7 @@ import com.app.presentation.viewmodel.DeezerGenreViewModel
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.DeezerSongsViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -171,7 +168,7 @@ fun AddScreen(
     ) {
         Box(
             modifier = Modifier
-                .weight(1f)
+                .weight(0.5f)
                 .fillMaxWidth()
                 .background(Color(0xFF39D0B9)),
             contentAlignment = Alignment.Center
@@ -282,7 +279,7 @@ fun AddScreen(
                                     offset = with(density) {
                                         IntOffset(
                                             x = 0,
-                                            y = offsetY.roundToPx()
+                                            y = -offsetY.roundToPx()
                                         )
                                     },
                                     properties = PopupProperties(focusable = false)
@@ -291,7 +288,7 @@ fun AddScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .zIndex(1f)
-                                            .heightIn(max = 150.dp),
+                                            .heightIn(max = 200.dp),
                                         shape = RoundedCornerShape(8.dp),
                                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                                     ) {
@@ -364,6 +361,7 @@ fun AddScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -449,7 +447,7 @@ fun AddScreen(
                                     offset = with(density) {
                                         IntOffset(
                                             x = 0,
-                                            y = offsetY.roundToPx()
+                                            y = -offsetY.roundToPx()
                                         )
                                     },
                                     properties = PopupProperties(focusable = false)
@@ -527,6 +525,7 @@ fun AddScreen(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -569,7 +568,7 @@ fun AddScreen(
                             modifier = Modifier
                                 .menuAnchor(),
 
-                        )
+                            )
                         ExposedDropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
@@ -621,7 +620,7 @@ fun AddScreen(
         }
         Box(
             modifier = Modifier
-                .weight(1.5f)
+                .weight(0.5f)
                 .fillMaxWidth()
                 .padding(horizontal = screenWidth * 0.07f),
             contentAlignment = Alignment.Center
@@ -669,4 +668,3 @@ fun AddScreen(
         }
     }
 }
-

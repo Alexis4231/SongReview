@@ -18,4 +18,5 @@ sealed class Screen(val route: String) {
     data object SongNotAdded: Screen("songnotadded/{songName}-{songArtist}"){
         fun createRoute(songName: String, songArtist: String) = "songnotadded/$songName-$songArtist"
     }
+    data object Splash: Screen("splash")
 }
