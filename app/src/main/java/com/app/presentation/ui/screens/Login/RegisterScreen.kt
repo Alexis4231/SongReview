@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -296,6 +297,22 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     )
                 }
             }
+        }
+        Box(
+            modifier = Modifier
+                .weight(0.7f)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Iniciar sesión",
+                color = Color(0xFF39D0B9),
+                modifier = Modifier.clickable {
+                    navController.navigate(Screen.Login.route){
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

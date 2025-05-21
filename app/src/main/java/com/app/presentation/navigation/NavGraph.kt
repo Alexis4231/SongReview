@@ -42,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.app.presentation.ui.screens.AddScreen
+import com.app.presentation.ui.screens.CardUserScreen
 import com.app.presentation.ui.screens.HomeScreen
 import com.app.presentation.ui.screens.Login.LoginScreen
 import com.app.presentation.ui.screens.Login.RegisterScreen
@@ -104,7 +105,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 val code = backStackEntry.arguments?.getString("songCode")
                 ReviewsScreen(navController, code)
             }
-            composable(Screen.Profile.route) { ProfileScreen(navController, navBarViewModel) }
+            composable(Screen.Profile.route) { ProfileScreen(navController) }
             composable(Screen.ResetPassword.route) { ResetPasswordScreen(navController) }
             composable(Screen.SuccessResetPassword.route) { SuccessResetPasswordScreen(navController) }
             composable(Screen.SongAdded.route) {backStackEntry ->
@@ -116,6 +117,10 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 val name = backStackEntry.arguments?.getString("songName")
                 val artist = backStackEntry.arguments?.getString("songArtist")
                 SongNotAdded(navController,name,artist)
+            }
+            composable(Screen.CardUser.route) {backStackEntry ->
+                val code = backStackEntry.arguments?.getString("userCode")
+                CardUserScreen(navController,code)
             }
         }
     }
@@ -153,8 +158,8 @@ fun BottomNavigationBar(navController: NavController, navBarViewModel: NavBarVie
                         .clickable {
                             if (currentRoute != screen.route) {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+                                    popUpTo(currentRoute!!) {
+                                        inclusive = true
                                     }
                                     launchSingleTop = true
                                     restoreState = true

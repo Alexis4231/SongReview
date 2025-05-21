@@ -23,6 +23,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import com.app.R
+import com.app.presentation.navigation.Screen
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -39,12 +40,12 @@ fun SplashScreen(navController: NavController) {
         )
         delay(1000)
         if (auth.currentUser != null) {
-            navController.navigate("home") {
-                popUpTo("splash") { inclusive = true }
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
             }
         } else {
-            navController.navigate("login") {
-                popUpTo("splash") { inclusive = true }
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
             }
         }
     }

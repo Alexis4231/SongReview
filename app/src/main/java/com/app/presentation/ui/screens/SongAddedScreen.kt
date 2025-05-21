@@ -96,7 +96,9 @@ fun SongAdded(navController: NavController, songName: String?, artistName: Strin
             Button(
                 onClick = {
                     if(!code.isNullOrEmpty()){
-                        navController.navigate(Screen.Reviews.createRoute(code!!))
+                        navController.navigate(Screen.Reviews.createRoute(code!!)){
+                            popUpTo(Screen.SongAdded.route) { inclusive = true }
+                        }
                     }
                 },
                 modifier = Modifier

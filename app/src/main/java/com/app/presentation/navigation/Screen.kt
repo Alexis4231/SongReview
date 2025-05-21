@@ -19,4 +19,7 @@ sealed class Screen(val route: String) {
         fun createRoute(songName: String, songArtist: String) = "songnotadded/$songName-$songArtist"
     }
     data object Splash: Screen("splash")
+    data object CardUser: Screen("carduser/{userCode}"){
+        fun createRoute(userCode: String) = "carduser/$userCode"
+    }
 }

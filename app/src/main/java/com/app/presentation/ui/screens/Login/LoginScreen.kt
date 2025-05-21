@@ -68,7 +68,6 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.Black),
-
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SnackbarHost(
@@ -186,7 +185,9 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                     .align(Alignment.End)
                     .padding(0.dp,0.dp,screenWidth*0.05f,0.dp)
                     .clickable {
-                    navController.navigate(Screen.ResetPassword.route)
+                    navController.navigate(Screen.ResetPassword.route){
+                        popUpTo(Screen.Login.route){ inclusive = true }
+                    }
                 }
             )
         }
@@ -212,7 +213,9 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                                         loginUser(email, password) { success, errorMessage ->
                                             scope.launch {
                                                 if (success) {
-                                                    navController.navigate(Screen.Home.route)
+                                                    navController.navigate(Screen.Home.route){
+                                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                                    }
                                                 } else {
                                                     isLoading = false
                                                     snackbarHostState.showSnackbar(errorMessage.toString())
@@ -268,7 +271,9 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                 text = "Registrarse",
                 color = Color(0xFF39D0B9),
                 modifier = Modifier.clickable {
-                    navController.navigate(Screen.Register.route)
+                    navController.navigate(Screen.Register.route){
+                        popUpTo(Screen.Login.route){ inclusive = true }
+                    }
                 }
             )
         }

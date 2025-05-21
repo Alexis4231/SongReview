@@ -17,10 +17,15 @@ import com.app.presentation.viewmodel.SpotifyTokenViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import GetUserDetailsViewModel
+import com.app.data.repository.RequestFirestoreRepository
 import com.app.data.repository.ReviewFirestoreRepository
 import com.app.data.repository.SongFirestoreRepository
+import com.app.domain.repository.RequestRepository
 import com.app.domain.repository.ReviewRepository
 import com.app.domain.repository.SongRepository
+import com.app.domain.usecase.request.GetRequestsByCodeIssuerUseCase
+import com.app.domain.usecase.request.GetStatusByCodeIssuerAndCodeReceiverUseCase
+import com.app.domain.usecase.request.SaveRequestUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
@@ -30,6 +35,7 @@ import com.app.domain.usecase.song.GetSongByCodeUseCase
 import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
 import com.app.domain.usecase.user.GetUsersUseCase
+import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -42,6 +48,7 @@ val appModule = module{
     single<UserRepository> { UserFirestoreRepository(get()) }
     single<SongRepository> { SongFirestoreRepository(get()) }
     single<ReviewRepository> { ReviewFirestoreRepository(get()) }
+    single<RequestRepository> { RequestFirestoreRepository(get()) }
 
     // UseCase
     factory { GetUserByCodeUseCase(get()) }
@@ -58,6 +65,9 @@ val appModule = module{
     factory { GetReviewsByCodeSongUseCase(get()) }
     factory { GetReviewsByCodeUserUseCase(get()) }
     factory { GetCodeByTitleAndArtistUseCase(get()) }
+    factory { SaveRequestUseCase(get()) }
+    factory { GetRequestsByCodeIssuerUseCase(get()) }
+    factory { GetStatusByCodeIssuerAndCodeReceiverUseCase(get()) }
 
 
 
@@ -66,4 +76,5 @@ val appModule = module{
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get()) }
+    viewModel { RequestViewModel(get(),get(),get()) }
 }

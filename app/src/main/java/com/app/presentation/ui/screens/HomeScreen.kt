@@ -418,7 +418,9 @@ fun listProfilesContent(
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        onClick = { }
+                        onClick = {
+                            navController.navigate(Screen.CardUser.createRoute(user.code))
+                        }
                     ) {
                         Text(
                             text = user.name,

@@ -41,15 +41,20 @@ import java.util.Locale
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    navBarViewModel: NavBarViewModel,
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
-    userViewModel: UserViewModel = koinViewModel()
+    userViewModel: UserViewModel = koinViewModel(),
+    reviewViewModel: ReviewViewModel = koinViewModel()
 ) {
+    val reviews by reviewViewModel.reviews.collectAsState()
+    val user = getUserDetailsViewModel.user.value
+
     LaunchedEffect(Unit) {
         getUserDetailsViewModel.loadUserData()
     }
 
-    val user = getUserDetailsViewModel.user.value
+    LaunchedEffect(user) {
+        user?.let { reviewViewModel.getReviewsByCodeUser(it.code) }
+    }
 
     var selectedProfileItem by remember { mutableStateOf(0) }
     val profileItems = listOf("Reseñas", "Ajustes")
@@ -74,7 +79,7 @@ fun ProfileScreen(
             ProfileHeader(
                 name = user.name,
                 email = user.email,
-                reviewsCount = 3,
+                reviewsCount = reviews.size,
                 onFollowersClick = {
                     println("Usuarios seguidos clickeado")
                 }
@@ -169,7 +174,7 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF44A898)),
                 onClick = { navController.navigate(Screen.Reviews.createRoute(review.codeSong)) }
             ) {
                 Row(
@@ -180,12 +185,11 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                     Surface(
                         modifier = Modifier.size(40.dp),
                         shape = CircleShape,
-                        color = Color.White
+                        color = Color(0xFFD0C4FF)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
-                                fontWeight = FontWeight.Bold,
                                 color = Color.Black
                             )
                         }

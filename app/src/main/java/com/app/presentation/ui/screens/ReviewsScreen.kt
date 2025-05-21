@@ -408,7 +408,7 @@ fun CardReviews(user: User, review: Review){
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF00C4A7))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF44A898))
     ) {
         Row(
             modifier = Modifier

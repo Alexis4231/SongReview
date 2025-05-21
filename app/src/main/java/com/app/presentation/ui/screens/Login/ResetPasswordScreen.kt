@@ -203,7 +203,11 @@ fun ResetPasswordScreen(navController: NavController){
             contentAlignment = Alignment.Center
         ) {
             Button(
-                onClick = { navController.navigate(Screen.Login.route) },
+                onClick = {
+                    navController.navigate(Screen.Login.route){
+                        popUpTo(Screen.ResetPassword.route) { inclusive = true }
+                    }
+                          },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = screenWidth * 0.04f)

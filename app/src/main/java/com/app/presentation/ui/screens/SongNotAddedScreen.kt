@@ -96,7 +96,9 @@ fun SongNotAdded(navController: NavController, songName: String?, artistName: St
             Button(
                 onClick = {
                     if(!code.isNullOrEmpty()){
-                        navController.navigate(Screen.Reviews.createRoute(code!!))
+                        navController.navigate(Screen.Reviews.createRoute(code!!)){
+                            popUpTo(Screen.SongNotAdded.route) { inclusive = true }
+                        }
                     }
                 },
                 modifier = Modifier
