@@ -48,9 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.R
+import com.app.domain.model.User
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -255,14 +257,10 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                             userViewModel.avaliableUsername(
                                 name,
                                 {
-                                    registerUser(email, password) { success ->
+                                    registerUser(email, password,name) { success ->
                                         scope.launch {
                                             if (success) {
-                                                userViewModel.setName(name)
-                                                userViewModel.setEmail(email)
-                                                userViewModel.save()
                                                 navController.navigate(Screen.SuccesRegister.route)
-
                                             } else {
                                                 isLoading = false
                                                 snackbarHostState.showSnackbar("Error al crear el usuario")
@@ -317,22 +315,38 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
     }
 }
 
-fun registerUser(email: String, password: String, onComplete: (Boolean) -> Unit) {
+fun registerUser(email: String, password: String, name: String, onResult: (Boolean) -> Unit) {
     val auth = FirebaseAuth.getInstance()
+    val firestore = FirebaseFirestore.getInstance()
+
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val user = auth.currentUser
-                user?.sendEmailVerification()?.addOnCompleteListener { verifyTask ->
-                    if (verifyTask.isSuccessful) {
-                        auth.signOut()
-                        onComplete(true)
-                    } else {
-                        onComplete(false)
-                    }
+                val currentUser = auth.currentUser
+                if (currentUser != null) {
+                    val user = User(code = currentUser.uid, name = name, email = email)
+                    firestore.collection("users")
+                        .document(currentUser.uid)
+                        .set(user)
+                        .addOnSuccessListener {
+                            currentUser.sendEmailVerification()
+                                .addOnCompleteListener { verifyTask ->
+                                    if (verifyTask.isSuccessful) {
+                                        auth.signOut()
+                                        onResult(true)
+                                    } else {
+                                        onResult(false)
+                                    }
+                                }
+                        }
+                        .addOnFailureListener { _ ->
+                            onResult(false)
+                        }
+                } else {
+                    onResult(false)
                 }
-            } else {
-                onComplete(false)
+            }else{
+                onResult(false)
             }
         }
 }

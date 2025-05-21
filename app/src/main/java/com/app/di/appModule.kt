@@ -6,7 +6,6 @@ import com.app.domain.usecase.user.DeleteUserUseCase
 import com.app.domain.usecase.user.ExistUsernameUseCase
 import com.app.domain.usecase.user.GetEmailByNameUseCase
 import com.app.domain.usecase.user.GetUserByCodeUseCase
-import com.app.domain.usecase.user.SaveUserUseCase
 import com.app.presentation.viewmodel.DeezerAlbumViewModel
 import com.app.presentation.viewmodel.DeezerArtistsViewModel
 import com.app.presentation.viewmodel.DeezerGenreViewModel
@@ -53,7 +52,6 @@ val appModule = module{
     // UseCase
     factory { GetUserByCodeUseCase(get()) }
     factory { ExistUsernameUseCase(get()) }
-    factory { SaveUserUseCase(get()) }
     factory { DeleteUserUseCase(get()) }
     factory { GetEmailByNameUseCase(get()) }
     factory { GetUsersUseCase(get()) }
@@ -72,7 +70,7 @@ val appModule = module{
 
 
     // ViewModel
-    viewModel { UserViewModel(get(),get(),get(),get(),get(),get()) }
+    viewModel { UserViewModel(get(),get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get()) }

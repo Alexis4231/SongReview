@@ -10,7 +10,6 @@ import com.app.domain.usecase.user.ExistUsernameUseCase
 import com.app.domain.usecase.user.GetEmailByNameUseCase
 import com.app.domain.usecase.user.GetUserByCodeUseCase
 import com.app.domain.usecase.user.GetUsersUseCase
-import com.app.domain.usecase.user.SaveUserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +17,6 @@ import kotlinx.coroutines.launch
 
 class UserViewModel(
     private val existUsernameUseCase: ExistUsernameUseCase,
-    private val saveUserUseCase: SaveUserUseCase,
     private val getEmailByNameUseCase: GetEmailByNameUseCase,
     private val deleteUserUseCase: DeleteUserUseCase,
     private val getUserByCodeUseCase: GetUserByCodeUseCase,
@@ -31,19 +29,6 @@ class UserViewModel(
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users.asStateFlow()
 
-
-    fun setName(name: String) {
-        _user.value = _user.value.copy(
-            name = name
-        )
-    }
-
-    fun setEmail(email:String){
-        _user.value = _user.value.copy(
-            email = email
-        )
-    }
-
     fun avaliableUsername(name: String, onSuccess: () -> Unit, onFail : () -> Unit) {
         viewModelScope.launch {
             if (!existUsernameUseCase(name)) {
@@ -51,12 +36,6 @@ class UserViewModel(
             } else {
                 onFail()
             }
-        }
-    }
-
-    fun save() {
-        viewModelScope.launch {
-            saveUserUseCase(user.value)
         }
     }
 
