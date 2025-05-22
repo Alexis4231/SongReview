@@ -119,8 +119,8 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 SongNotAdded(navController,name,artist)
             }
             composable(Screen.CardUser.route) {backStackEntry ->
-                val code = backStackEntry.arguments?.getString("userCode")
-                CardUserScreen(navController,code)
+                val username = backStackEntry.arguments?.getString("username")
+                CardUserScreen(navController,username)
             }
         }
     }

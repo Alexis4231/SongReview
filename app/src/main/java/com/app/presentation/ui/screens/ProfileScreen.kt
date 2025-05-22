@@ -175,7 +175,7 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                     .fillMaxWidth()
                     .padding(8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF44A898)),
-                onClick = { navController.navigate(Screen.Reviews.createRoute(review.codeSong)) }
+                onClick = { navController.navigate(Screen.Reviews.createRoute(review.publicReview.codeSong)) }
             ) {
                 Row(
                     modifier = Modifier
@@ -200,7 +200,7 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                         Row {
                             repeat(5) { index ->
                                 Icon(
-                                    imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                    imageVector = if (index < review.publicReview.rating) Icons.Default.Star else Icons.Default.StarBorder,
                                     contentDescription = "Star",
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp)
@@ -208,12 +208,12 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                             }
                         }
                         Text(
-                            text = review.comment,
+                            text = review.publicReview.comment,
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
+                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.publicReview.creationDate),
                             color = Color.White,
                             fontSize = 10.sp,
                             fontFamily = FontFamily.Serif

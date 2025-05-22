@@ -354,7 +354,7 @@ fun listProfilesContent(
     userDetailsUserViewModel: GetUserDetailsViewModel = viewModel()
 ){
     val density = LocalDensity.current.density
-    val users by userViewModel.users.collectAsState()
+    val usernames by userViewModel.names.collectAsState()
 
     LaunchedEffect(Unit) {
         userDetailsUserViewModel.loadUserData()
@@ -367,8 +367,8 @@ fun listProfilesContent(
     }
 
     val filteredProfiles = if(search.length >= 1){
-        users.filter {
-            it.name.contains(search, ignoreCase = true)
+        usernames.filter {
+            it.contains(search, ignoreCase = true)
         }
     }else{
         emptyList()
@@ -411,19 +411,19 @@ fun listProfilesContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-            items(filteredProfiles) { user ->
-                if (user.name != myUser?.name) {
+            items(filteredProfiles) { username ->
+                if (username != myUser?.name) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         onClick = {
-                            navController.navigate(Screen.CardUser.createRoute(user.code))
+                            navController.navigate(Screen.CardUser.createRoute(username))
                         }
                     ) {
                         Text(
-                            text = user.name,
+                            text = username,
                             modifier = Modifier.padding(16.dp),
                             style = MaterialTheme.typography.bodyLarge
                         )

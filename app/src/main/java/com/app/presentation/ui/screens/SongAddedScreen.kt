@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.SongDBViewModel
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -44,76 +46,88 @@ fun SongAdded(navController: NavController, songName: String?, artistName: Strin
 
     LaunchedEffect(Unit) {
         if(songName != null && artistName != null) {
+            delay(2000)
             songDBViewModel.getCodeByTitleAndArtist(songName, artistName)
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(0xFF585D5F)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Icon",
-                tint = Color.White,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+    if(code != null) {
         Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = screenWidth*0.07f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+                .fillMaxSize()
+                .background(color = Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Canción añadida correctamente",
-                color = Color.White,
-                fontSize = (8.5*density).sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Gracias por añadir una nueva canción",
-                color = Color.White,
-                fontSize = (6*density).sp
-            )
-        }
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = screenWidth * 0.07f),
-            contentAlignment = Alignment.Center
-        ) {
-            Button(
-                onClick = {
-                    if(!code.isNullOrEmpty()){
-                        navController.navigate(Screen.Reviews.createRoute(code!!)){
-                            popUpTo(Screen.SongAdded.route) { inclusive = true }
-                        }
-                    }
-                },
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = screenWidth * 0.04f)
-                    .align(Alignment.TopEnd),
-                shape = RoundedCornerShape(15.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FB3A4))
+                    .weight(1f)
             ) {
-                Text(
-                    text = "Ir a la reseña",
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(vertical = screenHeight*0.02f)
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Icon",
+                    tint = Color.White,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = screenWidth * 0.07f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "Canción añadida correctamente",
+                    color = Color.White,
+                    fontSize = (8.5 * density).sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Gracias por añadir una nueva canción",
+                    color = Color.White,
+                    fontSize = (6 * density).sp
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = screenWidth * 0.07f),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        if (!code.isNullOrEmpty()) {
+                            navController.navigate(Screen.Reviews.createRoute(code!!)) {
+                                popUpTo(Screen.SongAdded.route) { inclusive = true }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = screenWidth * 0.04f)
+                        .align(Alignment.TopEnd),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4FB3A4))
+                ) {
+                    Text(
+                        text = "Ir a la reseña",
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(vertical = screenHeight * 0.02f)
+                    )
+                }
+            }
+        }
+    }else{
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF585D5F)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
         }
     }
 }

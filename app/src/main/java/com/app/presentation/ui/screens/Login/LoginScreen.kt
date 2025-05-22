@@ -123,7 +123,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                         Icon(imageVector = Icons.Outlined.Person, contentDescription = "Person",tint = Color.White, modifier = Modifier.padding(0.dp,0.dp,screenWidth*0.05f,0.dp))
                         Box(modifier = Modifier.weight(1f)) {
                             if (userOrMail.isEmpty()) {
-                                Text("Usuario o correo", color = Color.White)
+                                Text("Correo electrónico", color = Color.White)
                             }
                             innerTextField()
                         }

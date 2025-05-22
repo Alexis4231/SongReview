@@ -16,7 +16,7 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
         return try{
             val documentSnapshot = usersCollection.document(code).get().await()
             val user = documentSnapshot.toObject(User::class.java)
-            if(user?.code == currentUser.uid){
+            if(user?.code == currentUser.uid && currentUser.isEmailVerified){
                 user
             }else{
                 null
@@ -32,7 +32,7 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
             val documentSnapshot = usersCollection.document(code)
             val snapshot = documentSnapshot.get().await()
             val user = snapshot.toObject(User::class.java)
-            if(user?.code == currentUser.uid){
+            if(user?.code == currentUser.uid && currentUser.isEmailVerified){
                 documentSnapshot.delete().await()
                 true
             }else{
@@ -70,13 +70,15 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
         }
     }
 
-    override suspend fun getUsers(): List<User> {
+    override suspend fun getUsers(): List<String> {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
         return try{
+            if(!currentUser.isEmailVerified) return emptyList()
             val documentSnapshot = usersCollection
                 .orderBy("creationDate", Query.Direction.DESCENDING)
                 .get().
                 await()
-            documentSnapshot.toObjects(User::class.java)
+            documentSnapshot.toObjects(User::class.java).mapNotNull { it.name }
         }catch (e: Exception) {
             emptyList()
         }

@@ -65,8 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.app.domain.model.Review
-import com.app.domain.model.User
+import com.app.domain.model.PublicReview
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerSongViewModel
 import com.app.presentation.viewmodel.SpotifyLinkViewModel
@@ -80,7 +79,7 @@ import kotlin.math.roundToInt
 @Composable
 fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel(), reviewViewModel: ReviewViewModel = koinViewModel(), userViewModel: UserViewModel = koinViewModel() ) {
     val song by songDBViewModel.song.collectAsState()
-    val reviews by reviewViewModel.reviews.collectAsState()
+    val reviews by reviewViewModel.publicReviews.collectAsState()
     var snackbarHostState = remember { SnackbarHostState() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -127,11 +126,7 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
             }
 
             items(reviews) { review ->
-                val user = userViewModel.user.collectAsState()
-                LaunchedEffect(Unit) {
-                    userViewModel.getUserByCode(review.codeUser)
-                }
-                CardReviews(user.value, review)
+                CardReviews(review)
             }
         }
     }
@@ -371,9 +366,8 @@ fun CardPublishReview(
                     }else {
                         if (user != null) {
                             reviewViewModel.setCodeUser(user.code)
-                            reviewViewModel.setCodeSong(code)
-                            reviewViewModel.setRating(punctuation)
-                            reviewViewModel.setComment(textReview.text)
+                            val publicReview = PublicReview(codeSong = code, rating = punctuation, comment = textReview.text, username = user.name)
+                            reviewViewModel.setPublicReview(publicReview)
                             reviewViewModel.save()
                             textReview = TextFieldValue("")
                             punctuation = 0
@@ -403,7 +397,7 @@ fun CardPublishReview(
 }
 
 @Composable
-fun CardReviews(user: User, review: Review){
+fun CardReviews(review: PublicReview){
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,7 +416,7 @@ fun CardReviews(user: User, review: Review){
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
-                        text = user.name.toUpperCase().firstOrNull()?.toString() ?: "",
+                        text = review.username.toUpperCase().firstOrNull()?.toString() ?: "",
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
@@ -430,7 +424,7 @@ fun CardReviews(user: User, review: Review){
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(text = review.username, fontWeight = FontWeight.SemiBold, color = Color.White)
                 Row {
                     repeat(5) { index ->
                         Icon(

@@ -49,7 +49,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CardUserScreen(
     navController: NavController,
-    code: String?,
+    username: String?,
     userViewModel: UserViewModel = koinViewModel(),
     reviewViewModel: ReviewViewModel = koinViewModel(),
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
@@ -62,7 +62,6 @@ fun CardUserScreen(
     var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        code?.let { userViewModel.getUserByCode(it) }
         getUserDetailsViewModel.loadUserData()
     }
 
@@ -70,10 +69,6 @@ fun CardUserScreen(
         if(myUser != null && user != null){
             requestViewModel.getStatusByCodeIssuerAndCodeReceiver(myUser.code,user.value.code)
         }
-    }
-
-    LaunchedEffect(user) {
-        code?.let { reviewViewModel.getReviewsByCodeUser(it) }
     }
 
     Box(
@@ -91,7 +86,7 @@ fun CardUserScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         UserHeader(
-            name = user.value.name,
+            name = username.toString(),
             reviewsCount = reviews.size,
             status = status?.toString(),
             isLoading = isLoading,

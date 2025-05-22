@@ -2,6 +2,7 @@ package com.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.domain.model.PublicReview
 import com.app.domain.model.Review
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
@@ -18,11 +19,17 @@ class ReviewViewModel(
     private val getReviewsByCodeSongUseCase: GetReviewsByCodeSongUseCase,
     private val getReviewsByCodeUserUseCase: GetReviewsByCodeUserUseCase
 ):ViewModel() {
-    private val _review = MutableStateFlow(Review())
+    private val _review = MutableStateFlow(Review(codeUser = "", publicReview = PublicReview(codeSong = "")))
     val review: StateFlow<Review> = _review
+
+    private val _publicReview = MutableStateFlow(PublicReview())
+    val publicReview: StateFlow<PublicReview> = _publicReview
 
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews.asStateFlow()
+
+    private val _publicReviews  = MutableStateFlow<List<PublicReview>>(emptyList())
+    val publicReviews: StateFlow<List<PublicReview>> = _publicReviews.asStateFlow()
 
     fun setCodeUser(codeUser: String) {
         _review.value = _review.value.copy(
@@ -30,22 +37,9 @@ class ReviewViewModel(
         )
     }
 
-    fun setCodeSong(codeSong: String) {
-        _review.value = _review.value.copy(
-            codeSong = codeSong
-        )
-    }
-
-    fun setRating(rating: Int) {
-        _review.value = _review.value.copy(
-            rating = rating
-        )
-    }
-
-    fun setComment(comment: String) {
-        _review.value = _review.value.copy(
-            comment = comment
-        )
+    fun setPublicReview(publicReview: PublicReview){
+        _publicReview.value = publicReview
+        _review.value = _review.value.copy(publicReview = publicReview)
     }
 
     fun save() {
@@ -56,13 +50,13 @@ class ReviewViewModel(
 
     fun getReviews(){
         viewModelScope.launch {
-            _reviews.value = getReviewsUseCase()
+            _publicReviews.value = getReviewsUseCase()
         }
     }
 
     fun getReviewByCodeSong(codeSong: String){
         viewModelScope.launch {
-            _reviews.value = getReviewsByCodeSongUseCase(codeSong)
+            _publicReviews.value = getReviewsByCodeSongUseCase(codeSong)
         }
     }
 

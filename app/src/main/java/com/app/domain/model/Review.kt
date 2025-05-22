@@ -7,10 +7,13 @@ import java.util.Date
 data class Review(
     @DocumentId val code: String = "",
     val codeUser: String,
-    val codeSong: String,
+    val publicReview: PublicReview = PublicReview(),
+)
+
+data class PublicReview(
+    val codeSong: String = "",
     @ServerTimestamp val creationDate: Date? = null,
     val rating: Int = 0,
-    val comment: String = ""
-) {
-    constructor(): this(codeUser = "", codeSong = "", rating = 0, comment = "")
-}
+    val comment: String = "",
+    val username: String = ""
+)

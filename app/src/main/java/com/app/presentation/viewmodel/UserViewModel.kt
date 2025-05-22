@@ -26,8 +26,8 @@ class UserViewModel(
     private val _user = MutableStateFlow(User("", "", ""))
     val user: StateFlow<User> = _user
 
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users.asStateFlow()
+    private val _names = MutableStateFlow<List<String>>(emptyList())
+    val names: StateFlow<List<String>> = _names.asStateFlow()
 
     fun avaliableUsername(name: String, onSuccess: () -> Unit, onFail : () -> Unit) {
         viewModelScope.launch {
@@ -47,7 +47,7 @@ class UserViewModel(
 
     fun getUsers(){
         viewModelScope.launch {
-            _users.value = getUsersUseCase()
+            _names.value = getUsersUseCase()
         }
     }
 
