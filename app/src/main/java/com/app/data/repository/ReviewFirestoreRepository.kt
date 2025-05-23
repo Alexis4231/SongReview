@@ -68,7 +68,7 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
             if(codeUser != currentUser.uid || !currentUser.isEmailVerified) return emptyList()
             val querySnapshot = reviewsCollection
                 .whereEqualTo("codeUser",codeUser)
-                .orderBy("publicReview.creationDate", Query.Direction.DESCENDING)
+                .orderBy("creationDate", Query.Direction.DESCENDING)
                 .get()
                 .await()
             querySnapshot.toObjects(Review::class.java)
