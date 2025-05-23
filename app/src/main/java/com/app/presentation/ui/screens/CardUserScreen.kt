@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,32 +44,32 @@ import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CardUserScreen(
     navController: NavController,
     username: String?,
-    userViewModel: UserViewModel = koinViewModel(),
     reviewViewModel: ReviewViewModel = koinViewModel(),
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
     requestViewModel: RequestViewModel = koinViewModel()
 ) {
     val reviews by reviewViewModel.reviews.collectAsState()
-    val user = userViewModel.user.collectAsState()
     val myUser = getUserDetailsViewModel.user.value
-    val status by requestViewModel.status.collectAsState()
-    var isLoading by remember { mutableStateOf(false) }
+    val statusMap by requestViewModel.status.collectAsState()
+
+    val status = statusMap?.keys?.firstOrNull() ?: ""
+    val isSender = statusMap?.values?.firstOrNull() ?: false
 
     LaunchedEffect(Unit) {
         getUserDetailsViewModel.loadUserData()
-    }
-
-    LaunchedEffect(user,myUser) {
-        if(myUser != null && user != null){
-            requestViewModel.getStatusByCodeIssuerAndCodeReceiver(myUser.code,user.value.code)
-        }
+        username?.let { requestViewModel.getStatus(it) }
     }
 
     Box(
@@ -88,15 +89,17 @@ fun CardUserScreen(
         UserHeader(
             name = username.toString(),
             reviewsCount = reviews.size,
-            status = status?.toString(),
-            isLoading = isLoading,
+            status = status,
+            isSender = isSender,
             onFollowersClick = {
-                isLoading = true
-                myUser?.let { requestViewModel.setCodeIssuer(it.code) }
-                requestViewModel.setCodeReceiver(user.value.code)
-                requestViewModel.save()
-                navController.navigate(Screen.CardUser.createRoute(user.value.code)) {
-                    popUpTo(Screen.CardUser.createRoute(user.value.code)) { inclusive = true }
+                myUser?.let{
+                    requestViewModel.setCodeIssuer(it.code)
+                    requestViewModel.setUsernameReceiver(username ?: "")
+                    CoroutineScope(Dispatchers.Main).launch {
+                        requestViewModel.save()
+                        delay(500)
+                        requestViewModel.getStatus(username ?: "")
+                    }
                 }
             }
         )
@@ -112,28 +115,23 @@ fun CardUserScreen(
 fun UserHeader(
     name: String,
     status: String?,
-    isLoading: Boolean,
+    isSender: Boolean,
     reviewsCount: Int,
-    onFollowersClick: () -> Unit
+    onFollowersClick: () -> Unit,
+    requestViewModel: RequestViewModel = koinViewModel()
 ) {
-    var colorButton = Color.Transparent
-    var colorText = Color.Transparent
-    var statusMessage = ""
+    val statusLoading by requestViewModel.isStatusLoading.collectAsState()
 
-    if(status.equals("PENDING")){
-        colorButton = Color.Gray
-        colorText = Color.White
-        statusMessage = "Enviado"
-    }else if(status.equals("ACCEPTED")){
-        colorButton = Color.Gray
-        colorText = Color.White
-        statusMessage = "Siguiendo"
-    }else{
-        colorButton = Color.White
-        colorText = Color.Black
-        statusMessage = "Seguir"
+    println("AQUI LOS RESULTADOS: $status $isSender")
+    val (colorButton, colorText, statusMessage) = when (status){
+        "PENDING" -> if(isSender){
+            Triple(Color.Gray, Color.White, "Enviado")
+        }else{
+            Triple(Color.White,Color.Black,"Aceptar")
+        }
+        "ACCEPTED" -> Triple(Color.Gray, Color.White, "Siguiendo")
+        else -> Triple(Color.White,Color.Black,"Seguir")
     }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,7 +143,6 @@ fun UserHeader(
         Column {
             Text(text = name, color = Color.White, fontSize = 18.sp)
             Text(text = "$reviewsCount reseñas", color = Color.White, fontSize = 14.sp)
-            status?.let { Text(text = it) }
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -162,13 +159,15 @@ fun UserHeader(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            if(!isLoading) {
+            if(!statusLoading) {
                 Row(
                     modifier = Modifier
+                        .align(Alignment.End)
                         .clickable { onFollowersClick() }
                         .background(colorButton, shape = RoundedCornerShape(8.dp))
                         .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(text = statusMessage, color = colorText, fontSize = 12.sp)
                 }

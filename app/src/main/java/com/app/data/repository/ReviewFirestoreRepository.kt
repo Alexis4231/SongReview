@@ -17,12 +17,14 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
         return try{
             if(!currentUser.isEmailVerified || review.codeUser != currentUser.uid ) return false
-            val songExists = Firebase.firestore.collection("songs")
-                .document(review.publicReview.codeSong)
-                .get()
-                .await()
-                .exists()
-            if(!songExists) return false
+            val songExists = review.publicReview?.let {
+                Firebase.firestore.collection("songs")
+                    .document(it.codeSong)
+                    .get()
+                    .await()
+                    .exists()
+            }
+            if(!songExists!!) return false
             reviewsCollection.add(review).await()
             true
         }catch (e: Exception){
@@ -49,7 +51,7 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
             if(!currentUser.isEmailVerified) return emptyList()
             val querySnapshot = reviewsCollection
                 .whereEqualTo("publicReview.codeSong",codeSong)
-                .orderBy("publicReview.creationDate", Query.Direction.DESCENDING)
+                .orderBy("creationDate", Query.Direction.DESCENDING)
                 .get()
                 .await()
             querySnapshot.documents.mapNotNull {doc ->

@@ -439,13 +439,6 @@ fun CardReviews(review: PublicReview){
                     text = review.comment,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.creationDate),
-                    color = Color.White,
-                    fontSize = 10.sp,
-                    fontFamily = FontFamily.Serif
-                )
             }
         }
     }

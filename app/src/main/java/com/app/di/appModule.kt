@@ -6,13 +6,6 @@ import com.app.domain.usecase.user.DeleteUserUseCase
 import com.app.domain.usecase.user.ExistUsernameUseCase
 import com.app.domain.usecase.user.GetEmailByNameUseCase
 import com.app.domain.usecase.user.GetUserByCodeUseCase
-import com.app.presentation.viewmodel.DeezerAlbumViewModel
-import com.app.presentation.viewmodel.DeezerArtistsViewModel
-import com.app.presentation.viewmodel.DeezerGenreViewModel
-import com.app.presentation.viewmodel.DeezerGenresViewModel
-import com.app.presentation.viewmodel.DeezerSongsViewModel
-import com.app.presentation.viewmodel.NavBarViewModel
-import com.app.presentation.viewmodel.SpotifyTokenViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import GetUserDetailsViewModel
@@ -22,8 +15,7 @@ import com.app.data.repository.SongFirestoreRepository
 import com.app.domain.repository.RequestRepository
 import com.app.domain.repository.ReviewRepository
 import com.app.domain.repository.SongRepository
-import com.app.domain.usecase.request.GetRequestsByCodeIssuerUseCase
-import com.app.domain.usecase.request.GetStatusByCodeIssuerAndCodeReceiverUseCase
+import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
@@ -64,8 +56,7 @@ val appModule = module{
     factory { GetReviewsByCodeUserUseCase(get()) }
     factory { GetCodeByTitleAndArtistUseCase(get()) }
     factory { SaveRequestUseCase(get()) }
-    factory { GetRequestsByCodeIssuerUseCase(get()) }
-    factory { GetStatusByCodeIssuerAndCodeReceiverUseCase(get()) }
+    factory { GetStatusUseCase(get()) }
 
 
 
@@ -74,5 +65,5 @@ val appModule = module{
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get()) }
-    viewModel { RequestViewModel(get(),get(),get()) }
+    viewModel { RequestViewModel(get(),get()) }
 }

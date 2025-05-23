@@ -211,13 +211,6 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                             text = review.publicReview.comment,
                             color = Color.White
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(review.publicReview.creationDate),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Serif
-                        )
                     }
                 }
             }
