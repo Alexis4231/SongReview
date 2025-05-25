@@ -86,9 +86,6 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
 
     LaunchedEffect(Unit) {
         code?.let { songDBViewModel.getSongByCode(it) }
-    }
-
-    LaunchedEffect(Unit) {
         code?.let { reviewViewModel.getReviewByCodeSong(it) }
     }
 

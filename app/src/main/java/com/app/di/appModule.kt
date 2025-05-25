@@ -15,10 +15,14 @@ import com.app.data.repository.SongFirestoreRepository
 import com.app.domain.repository.RequestRepository
 import com.app.domain.repository.ReviewRepository
 import com.app.domain.repository.SongRepository
+import com.app.domain.usecase.request.AcceptRequestUseCase
+import com.app.domain.usecase.request.CancelRequestUseCase
+import com.app.domain.usecase.request.DeleteRequestUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
+import com.app.domain.usecase.review.GetReviewsByUsernameFollowerUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.review.SaveReviewUseCase
 import com.app.domain.usecase.song.GetCodeByTitleAndArtistUseCase
@@ -54,16 +58,19 @@ val appModule = module{
     factory { GetReviewsUseCase(get()) }
     factory { GetReviewsByCodeSongUseCase(get()) }
     factory { GetReviewsByCodeUserUseCase(get()) }
+    factory { GetReviewsByUsernameFollowerUseCase(get()) }
     factory { GetCodeByTitleAndArtistUseCase(get()) }
     factory { SaveRequestUseCase(get()) }
     factory { GetStatusUseCase(get()) }
-
+    factory { AcceptRequestUseCase(get()) }
+    factory { DeleteRequestUseCase(get())}
+    factory { CancelRequestUseCase(get()) }
 
 
     // ViewModel
     viewModel { UserViewModel(get(),get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
-    viewModel { ReviewViewModel(get(),get(),get(),get()) }
-    viewModel { RequestViewModel(get(),get()) }
+    viewModel { ReviewViewModel(get(),get(),get(),get(),get()) }
+    viewModel { RequestViewModel(get(),get(),get(),get(),get()) }
 }

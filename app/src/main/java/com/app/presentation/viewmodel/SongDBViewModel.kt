@@ -68,10 +68,17 @@ class SongDBViewModel(
         }
     }
 
+    suspend fun fetchSongByCode(code: String): SongDB?{
+        return withContext(Dispatchers.IO){
+            getSongByCodeUseCase(code)
+        }
+    }
+
     fun getCodeByTitleAndArtist(title: String, artist: String){
         viewModelScope.launch {
             val result = getCodeByTitleAndArtistUseCase(title, artist)
             _code.value = result
         }
     }
+
 }

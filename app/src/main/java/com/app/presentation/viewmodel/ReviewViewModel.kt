@@ -6,6 +6,7 @@ import com.app.domain.model.PublicReview
 import com.app.domain.model.Review
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
+import com.app.domain.usecase.review.GetReviewsByUsernameFollowerUseCase
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.review.SaveReviewUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ class ReviewViewModel(
     private val saveReviewUseCase: SaveReviewUseCase,
     private val getReviewsUseCase: GetReviewsUseCase,
     private val getReviewsByCodeSongUseCase: GetReviewsByCodeSongUseCase,
-    private val getReviewsByCodeUserUseCase: GetReviewsByCodeUserUseCase
+    private val getReviewsByCodeUserUseCase: GetReviewsByCodeUserUseCase,
+    private val getReviewsByUsernameFollowerUserCase: GetReviewsByUsernameFollowerUseCase
 ):ViewModel() {
     private val _review = MutableStateFlow(Review(codeUser = "", publicReview = PublicReview(codeSong = "")))
     val review: StateFlow<Review> = _review
@@ -63,6 +65,12 @@ class ReviewViewModel(
     fun getReviewsByCodeUser(codeUser: String){
         viewModelScope.launch {
             _reviews.value = getReviewsByCodeUserUseCase(codeUser)
+        }
+    }
+
+    fun getReviewsByUsernameFollower(username: String){
+        viewModelScope.launch {
+            _publicReviews.value = getReviewsByUsernameFollowerUserCase(username)
         }
     }
 }

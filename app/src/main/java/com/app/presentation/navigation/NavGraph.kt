@@ -43,6 +43,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.app.presentation.ui.screens.AddScreen
 import com.app.presentation.ui.screens.CardUserScreen
+import com.app.presentation.ui.screens.FollowersScreen
 import com.app.presentation.ui.screens.HomeScreen
 import com.app.presentation.ui.screens.Login.LoginScreen
 import com.app.presentation.ui.screens.Login.RegisterScreen
@@ -122,6 +123,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 val username = backStackEntry.arguments?.getString("username")
                 CardUserScreen(navController,username)
             }
+            composable(Screen.Followers.route){ FollowersScreen(navController) }
         }
     }
 }

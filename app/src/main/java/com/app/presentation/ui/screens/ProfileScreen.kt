@@ -31,6 +31,7 @@ import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.app.presentation.navigation.Screen
@@ -81,7 +82,7 @@ fun ProfileScreen(
                 email = user.email,
                 reviewsCount = reviews.size,
                 onFollowersClick = {
-                    println("Usuarios seguidos clickeado")
+                    navController.navigate(Screen.Followers.route)
                 }
             )
 
@@ -110,7 +111,7 @@ fun ProfileHeader(
     name: String,
     email: String,
     reviewsCount: Int,
-    onFollowersClick: () -> Unit
+    onFollowersClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -160,8 +161,9 @@ fun ProfileHeader(
 }
 
 @Composable
-fun ReviewsContent(navController: NavController, user: User, reviewViewModel: ReviewViewModel = koinViewModel()) {
+fun ReviewsContent(navController: NavController, user: User, reviewViewModel: ReviewViewModel = koinViewModel(), songDBViewModel: SongDBViewModel = koinViewModel()) {
     val reviews by reviewViewModel.reviews.collectAsState()
+
     LaunchedEffect(Unit){
         reviewViewModel.getReviewsByCodeUser(user.code)
     }
@@ -170,6 +172,12 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
         modifier = Modifier.fillMaxSize()
     ) {
         items(reviews) { review ->
+            var title by remember { mutableStateOf<String?>(null) }
+
+            LaunchedEffect(review.publicReview.codeSong){
+                val song = songDBViewModel.fetchSongByCode(review.publicReview.codeSong)
+                title = song?.title ?: ""
+            }
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -196,6 +204,7 @@ fun ReviewsContent(navController: NavController, user: User, reviewViewModel: Re
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
+                        Text(text = title ?: "", fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 20.sp)
                         Text(text = user.name, fontWeight = FontWeight.SemiBold, color = Color.White)
                         Row {
                             repeat(5) { index ->
@@ -247,11 +256,11 @@ fun profileSettingsContent(navController: NavController, user: User, userViewMod
         }
     }
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showDeleteUserDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
-            .clickable {showDialog = true}
+            .clickable {showDeleteUserDialog = true}
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -276,14 +285,14 @@ fun profileSettingsContent(navController: NavController, user: User, userViewMod
         }
     }
 
-    if(showDialog){
-        showDeletePopup(
+    if(showDeleteUserDialog){
+        showDeleteUserPopup(
             onConfirm = {
-                showDialog = false
+                showDeleteUserDialog = false
                 deleteUser(navController, user, userViewModel)
             },
             onDismiss = {
-                showDialog = false
+                showDeleteUserDialog = false
             }
         )
     }
@@ -297,7 +306,7 @@ fun LogOut(navController: NavController){
 }
 
 @Composable
-fun showDeletePopup(
+fun showDeleteUserPopup(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {

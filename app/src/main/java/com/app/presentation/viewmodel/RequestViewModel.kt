@@ -6,8 +6,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.domain.model.Request
 import com.app.domain.model.SongDB
+import com.app.domain.usecase.request.AcceptRequestUseCase
+import com.app.domain.usecase.request.CancelRequestUseCase
+import com.app.domain.usecase.request.DeleteRequestUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +20,10 @@ import kotlinx.coroutines.launch
 
 class RequestViewModel(
     private val saveRequestUseCase: SaveRequestUseCase,
-    private val getStatusUseCase: GetStatusUseCase
+    private val getStatusUseCase: GetStatusUseCase,
+    private val acceptRequestUseCase: AcceptRequestUseCase,
+    private val deleteRequestUseCase: DeleteRequestUseCase,
+    private val cancelRequestUseCase: CancelRequestUseCase
 ):ViewModel() {
     private val _codeIssuer = MutableStateFlow("")
     val codeIssuer: StateFlow<String> = _codeIssuer.asStateFlow()
@@ -52,6 +59,24 @@ class RequestViewModel(
             _isStatusLoading.value = true
             _status.value = getStatusUseCase(username)
             _isStatusLoading.value = false
+        }
+    }
+
+    fun acceptRequest(username: String){
+        viewModelScope.launch {
+            acceptRequestUseCase(username)
+        }
+    }
+
+    fun deleteRequest(username: String){
+        viewModelScope.launch {
+            deleteRequestUseCase(username)
+        }
+    }
+
+    fun cancelRequest(username: String){
+        viewModelScope.launch {
+            cancelRequestUseCase(username)
         }
     }
 }

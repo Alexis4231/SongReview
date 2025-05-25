@@ -76,4 +76,45 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
             emptyList()
         }
     }
+
+    override suspend fun getReviewsByUsernameFollower(username: String): List<PublicReview> {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
+        return try{
+            if(!currentUser.isEmailVerified) return emptyList()
+            val querySnapshotUsers = Firebase.firestore.collection("users")
+                .whereEqualTo("name", username)
+                .get()
+                .await()
+            val userDoc = querySnapshotUsers.documents.firstOrNull() ?: return emptyList()
+            val codeUser = userDoc.id
+            val existingRequestLeft = Firebase.firestore.collection("requests")
+                .whereEqualTo("codeIssuer", currentUser.uid)
+                .whereEqualTo("codeReceiver", codeUser)
+                .whereEqualTo("status","ACCEPTED")
+                .limit(1)
+                .get()
+                .await()
+            val existingRequestRight = Firebase.firestore.collection("requests")
+                .whereEqualTo("codeIssuer", codeUser)
+                .whereEqualTo("codeReceiver", currentUser.uid)
+                .whereEqualTo("status","ACCEPTED")
+                .limit(1)
+                .get()
+                .await()
+            if(!existingRequestRight.isEmpty || !existingRequestLeft.isEmpty){
+               val querySnapshotReviews =  reviewsCollection
+                   .whereEqualTo("codeUser",codeUser)
+                   .orderBy("creationDate", Query.Direction.DESCENDING)
+                   .get()
+                   .await()
+                querySnapshotReviews.documents.mapNotNull {doc ->
+                    doc.toObject(Review::class.java)?.publicReview
+                }
+            }else {
+                return emptyList()
+            }
+        }catch (e: Exception){
+            emptyList()
+        }
+    }
 }
