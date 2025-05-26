@@ -14,14 +14,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.HotelClass
 import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -37,10 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.presentation.navigation.Screen
+import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -128,12 +140,138 @@ fun FollowersScreen(
 }
 
 @Composable
-fun followersContent(navController: NavController){
-
+fun followersContent(navController: NavController, requestViewModel: RequestViewModel = koinViewModel()){
+    val usernames by requestViewModel.usernames.collectAsState()
+    val density = LocalDensity.current.density
+    LaunchedEffect(Unit) {
+        requestViewModel.getFollowers()
+    }
+    if(usernames.isEmpty()){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.GroupAdd,
+                    contentDescription = "GroupAdd",
+                    tint = Color.White,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(0.8f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "Los usuarios que sigas aparecerán aquí",
+                    color = Color.White,
+                    fontSize = (10 * density).sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }else{
+        for (username in usernames) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(usernames) { username ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        onClick = {
+                            navController.navigate(Screen.CardUser.createRoute(username))
+                        }
+                    ) {
+                        Text(
+                            text = username,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
-fun requestsContent(navController: NavController){
-
+fun requestsContent(navController: NavController, requestViewModel: RequestViewModel = koinViewModel()){
+    val usernames by requestViewModel.usernames.collectAsState()
+    val density = LocalDensity.current.density
+    LaunchedEffect(Unit) {
+        requestViewModel.getRequestFollowers()
+    }
+    if(usernames.isEmpty()){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Check",
+                    tint = Color.White,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(0.8f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Text(
+                    text = "No tienes solicitudes de seguimiento pendientes",
+                    color = Color.White,
+                    fontSize = (10 * density).sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }else{
+        for (username in usernames) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(usernames) { username ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        onClick = {
+                            navController.navigate(Screen.CardUser.createRoute(username))
+                        }
+                    ) {
+                        Text(
+                            text = username,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 

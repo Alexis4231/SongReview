@@ -2,12 +2,11 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint .",
-    "start": "functions-framework --target=getSpotifyToken",
+    "start": "npm run shell",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
-    "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
@@ -18,7 +17,7 @@
   "dependencies": {
     "@google-cloud/functions-framework": "^4.0.0",
     "dotenv": "^16.5.0",
-    "firebase-admin": "^13.3.0",
+    "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2",
     "node-fetch": "^2.7.0"
   },

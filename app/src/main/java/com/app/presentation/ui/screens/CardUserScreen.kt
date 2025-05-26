@@ -129,6 +129,8 @@ fun CardUserScreen(
                     requestViewModel.acceptRequest(username ?: "")
                     delay(500)
                     requestViewModel.getStatus(username ?: "")
+                    reviewViewModel.getReviewsByUsernameFollower(username ?: "")
+
                 }
             },
             onDeleteRequest = {
@@ -341,7 +343,9 @@ fun UserHeader(
     ) {
         Column {
             Text(text = name, color = Color.White, fontSize = 18.sp)
-            Text(text = "$reviewsCount reseñas", color = Color.White, fontSize = 14.sp)
+            if(status.equals("ACCEPTED")) {
+                Text(text = "$reviewsCount reseñas", color = Color.White, fontSize = 14.sp)
+            }
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

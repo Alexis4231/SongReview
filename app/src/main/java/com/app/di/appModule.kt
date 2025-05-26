@@ -18,6 +18,8 @@ import com.app.domain.repository.SongRepository
 import com.app.domain.usecase.request.AcceptRequestUseCase
 import com.app.domain.usecase.request.CancelRequestUseCase
 import com.app.domain.usecase.request.DeleteRequestUseCase
+import com.app.domain.usecase.request.GetFollowersUseCase
+import com.app.domain.usecase.request.GetRequestFollowersUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
@@ -65,6 +67,8 @@ val appModule = module{
     factory { AcceptRequestUseCase(get()) }
     factory { DeleteRequestUseCase(get())}
     factory { CancelRequestUseCase(get()) }
+    factory { GetFollowersUseCase(get()) }
+    factory { GetRequestFollowersUseCase(get()) }
 
 
     // ViewModel
@@ -72,5 +76,5 @@ val appModule = module{
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get(),get()) }
-    viewModel { RequestViewModel(get(),get(),get(),get(),get()) }
+    viewModel { RequestViewModel(get(),get(),get(),get(),get(),get(),get()) }
 }

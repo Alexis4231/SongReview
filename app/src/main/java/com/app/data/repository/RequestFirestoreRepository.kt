@@ -2,12 +2,16 @@ package com.app.data.repository
 
 import com.app.domain.model.Request
 import com.app.domain.model.Review
+import com.app.domain.model.User
 import com.app.domain.repository.RequestRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepository {
     private val requestsCollection = firestore.collection("requests")
@@ -110,9 +114,12 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 .await()
             if(!existingRequest.isEmpty){
                 val requestDoc = existingRequest.documents.first()
-                requestsCollection.document(requestDoc.id)
-                    .update("status","ACCEPTED")
-                    .await()
+                val document = requestsCollection.document(requestDoc.id)
+                val updates = mapOf(
+                    "status" to "ACCEPTED",
+                    "date" to FieldValue.serverTimestamp()
+                )
+                document.set(updates, SetOptions.merge()).await()
             }else{
                 return false
             }
@@ -200,7 +207,7 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
         return try{
             if(!currentUser.isEmailVerified) return emptyList()
-            val result = mutableListOf<Request>()
+            val result = mutableListOf<Pair<String,Date?>>()
             val existingRequestsLeft = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("status","ACCEPTED")
@@ -211,10 +218,77 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 .whereEqualTo("status","ACCEPTED")
                 .get()
                 .await()
-            if(!existingRequestsRight.isEmpty || !existingRequestsLeft.isEmpty){
-
+            if(!existingRequestsLeft.isEmpty){
+                for(request in existingRequestsLeft.toObjects(Request::class.java)){
+                    val code = request.codeReceiver
+                    val date = request.date
+                    val documentSnapshot = Firebase.firestore.collection("users")
+                        .document(code)
+                        .get()
+                        .await()
+                    val user = documentSnapshot.toObject(User::class.java)
+                    if (user != null) {
+                        result.add(user.name to date)
+                    }
+                }
             }
+            if(!existingRequestsRight.isEmpty){
+                for(request in existingRequestsRight.toObjects(Request::class.java)){
+                    val code = request.codeIssuer
+                    val date = request.date
+                    val documentSnapshot = Firebase.firestore.collection("users")
+                        .document(code)
+                        .get()
+                        .await()
+                    val user = documentSnapshot.toObject(User::class.java)
+                    if (user != null) {
+                        result.add(user.name to date)
+                    }
+                }
+            }
+            if(result.isNotEmpty()){
+                return result
+                    .sortedByDescending { it.second }
+                    .map { it.first }
+            }else{
+                return emptyList()
+            }
+        }catch (e: Exception){
             emptyList()
+        }
+    }
+
+    override suspend fun getRequestFollowers(): List<String> {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
+        return try{
+            if(!currentUser.isEmailVerified) return emptyList()
+            val result = mutableListOf<Pair<String,Date?>>()
+            val existingRequestsRight = requestsCollection
+                .whereEqualTo("codeReceiver", currentUser.uid)
+                .whereEqualTo("status","PENDING")
+                .get()
+                .await()
+            if(!existingRequestsRight.isEmpty){
+                for(request in existingRequestsRight.toObjects(Request::class.java)){
+                    val code = request.codeIssuer
+                    val date = request.date
+                    val documentSnapshot = Firebase.firestore.collection("users")
+                        .document(code)
+                        .get()
+                        .await()
+                    val user = documentSnapshot.toObject(User::class.java)
+                    if (user != null) {
+                        result.add(user.name to date)
+                    }
+                }
+            }
+            if(result.isNotEmpty()){
+                return result
+                    .sortedByDescending { it.second }
+                    .map { it.first }
+            }else{
+                return emptyList()
+            }
         }catch (e: Exception){
             emptyList()
         }

@@ -8,5 +8,6 @@ data class User(
     @DocumentId val code: String = "",
     val name: String = "",
     val email: String = "",
-    @ServerTimestamp val creationDate: Date? = null
+    @ServerTimestamp val creationDate: Date? = null,
+    val fcmToken: String? = null
 )

@@ -53,6 +53,7 @@ import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -324,29 +325,40 @@ fun registerUser(email: String, password: String, name: String, onResult: (Boole
             if (task.isSuccessful) {
                 val currentUser = auth.currentUser
                 if (currentUser != null) {
-                    val user = User(code = currentUser.uid, name = name, email = email)
-                    firestore.collection("users")
-                        .document(currentUser.uid)
-                        .set(user)
-                        .addOnSuccessListener {
-                            currentUser.sendEmailVerification()
-                                .addOnCompleteListener { verifyTask ->
-                                    if (verifyTask.isSuccessful) {
-                                        auth.signOut()
-                                        onResult(true)
-                                    } else {
+                    FirebaseMessaging.getInstance().token
+                        .addOnCompleteListener { tokenTask ->
+                            if (tokenTask.isSuccessful) {
+                                val token = tokenTask.result
+                                val user = User(
+                                    code = currentUser.uid,
+                                    name = name,
+                                    email = email,
+                                    fcmToken = token
+                                )
+                                firestore.collection("users")
+                                    .document(currentUser.uid)
+                                    .set(user)
+                                    .addOnSuccessListener {
+                                        currentUser.sendEmailVerification()
+                                            .addOnCompleteListener { verifyTask ->
+                                                if (verifyTask.isSuccessful) {
+                                                    auth.signOut()
+                                                    onResult(true)
+                                                } else {
+                                                    onResult(false)
+                                                }
+                                            }
+                                    }
+                                    .addOnFailureListener { _ ->
                                         onResult(false)
                                     }
-                                }
-                        }
-                        .addOnFailureListener { _ ->
-                            onResult(false)
+                            } else {
+                                onResult(false)
+                            }
                         }
                 } else {
                     onResult(false)
                 }
-            }else{
-                onResult(false)
             }
         }
 }

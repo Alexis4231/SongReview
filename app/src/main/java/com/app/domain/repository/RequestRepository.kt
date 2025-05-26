@@ -7,4 +7,5 @@ interface RequestRepository {
     suspend fun deleteRequest(username: String): Boolean
     suspend fun cancelRequest(username: String): Boolean
     suspend fun getFollowers(): List<String>
+    suspend fun getRequestFollowers(): List<String>
 }

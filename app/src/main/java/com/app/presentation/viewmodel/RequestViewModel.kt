@@ -9,6 +9,8 @@ import com.app.domain.model.SongDB
 import com.app.domain.usecase.request.AcceptRequestUseCase
 import com.app.domain.usecase.request.CancelRequestUseCase
 import com.app.domain.usecase.request.DeleteRequestUseCase
+import com.app.domain.usecase.request.GetFollowersUseCase
+import com.app.domain.usecase.request.GetRequestFollowersUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
 import kotlinx.coroutines.cancel
@@ -23,7 +25,9 @@ class RequestViewModel(
     private val getStatusUseCase: GetStatusUseCase,
     private val acceptRequestUseCase: AcceptRequestUseCase,
     private val deleteRequestUseCase: DeleteRequestUseCase,
-    private val cancelRequestUseCase: CancelRequestUseCase
+    private val cancelRequestUseCase: CancelRequestUseCase,
+    private val getFollowersUseCase: GetFollowersUseCase,
+    private val getRequestFollowersUseCase: GetRequestFollowersUseCase
 ):ViewModel() {
     private val _codeIssuer = MutableStateFlow("")
     val codeIssuer: StateFlow<String> = _codeIssuer.asStateFlow()
@@ -39,6 +43,9 @@ class RequestViewModel(
 
     private val _requests = MutableStateFlow<List<Request>>(emptyList())
     val requests: StateFlow<List<Request>> = _requests.asStateFlow()
+
+    private val _usernames = MutableStateFlow<List<String>>(emptyList())
+    val usernames: StateFlow<List<String>> = _usernames.asStateFlow()
 
     fun setCodeIssuer(codeIssuer: String){
         _codeIssuer.value = codeIssuer
@@ -77,6 +84,18 @@ class RequestViewModel(
     fun cancelRequest(username: String){
         viewModelScope.launch {
             cancelRequestUseCase(username)
+        }
+    }
+
+    fun getFollowers(){
+        viewModelScope.launch {
+            _usernames.value = getFollowersUseCase()
+        }
+    }
+
+    fun getRequestFollowers(){
+        viewModelScope.launch {
+            _usernames.value = getRequestFollowersUseCase()
         }
     }
 }
