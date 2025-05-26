@@ -8,6 +8,3 @@ typings/
 # Node.js dependency directory
 node_modules/
 *.local
-
-# Firebase Admin SDK private key
-serviceAccountKey.json
