@@ -213,6 +213,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                                         loginUser(email, password) { success, errorMessage ->
                                             scope.launch {
                                                 if (success) {
+                                                    userViewModel.verifyAndUpdateToken()
                                                     navController.navigate(Screen.Home.route){
                                                         popUpTo(Screen.Login.route) { inclusive = true }
                                                     }

@@ -1,5 +1,6 @@
-import {onSchedule} from "firebase-functions/v2/scheduler";
-import * as logger from "firebase-functions/logger";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { logger } from "firebase-functions";
 import * as admin from "firebase-admin";
 
 // Inicialización de Firebase Admin SDK
@@ -49,5 +50,46 @@ export const deleteUnverifiedUsers = onSchedule("every 24 hours", async () => {
         } while (nextPageToken);
     } catch (error) {
         logger.error("Error general al eliminar usuarios no verificados:", error);
+    }
+});
+
+// notificaciones
+export const sendFriendRequestNotification = onDocumentCreated("requests/{requestId}", async (event) => {
+    try{
+        const snapshot = event.data;
+        if (!snapshot){
+            logger.error("No se encontro el documento de la solicitud");
+            return;
+        }
+        const request = snapshot.data();
+        if (!request || !request.codeIssuer || !request.codeReceiver){
+            logger.error("Datos incompletos en la solicitud",request);
+            return;
+        }
+        const fromUserDoc = await admin.firestore().collection("users").doc(request.codeIssuer).get();
+        const toUserDoc = await admin.firestore().collection("users").doc(request.codeReceiver).get();
+        if(!fromUserDoc.exists || !toUserDoc.exists){
+            logger.error("Uno de los usuarios no existe");
+            return;
+        }
+        const fromUser = fromUserDoc.data();
+        const toUser = toUserDoc.data();
+        const fcmToken = toUser?.fcmToken;
+        if (!fcmToken){
+            logger.warn("El usuario receptor no tiene un token FCM");
+            return;
+        }
+        const fromName = fromUser?.name || "Un usuario";
+        const message = {
+            notification: {
+                title: "Nueva solicitud de amistad",
+                body: `${fromName} te ha enviado una solicitud de amistad`,
+            },
+            token: fcmToken,
+        };
+        await admin.messaging().send(message);
+        logger.info(`Notificacion enviada a ${toUser?.email || 'receptor desconocido'}`);
+    }catch(error){
+        logger.error("Error al enviar la notificacion de solicitud de amistad:",error);
     }
 });

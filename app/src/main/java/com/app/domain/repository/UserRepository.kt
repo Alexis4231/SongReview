@@ -8,4 +8,5 @@ interface UserRepository {
     suspend fun existUsername(name: String): Boolean
     suspend fun getEmailByName(name:String): String
     suspend fun getUsers(): List<String>
+    suspend fun updateFcmToken(): Boolean
 }

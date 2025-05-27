@@ -32,6 +32,7 @@ import com.app.domain.usecase.song.GetSongByCodeUseCase
 import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
 import com.app.domain.usecase.user.GetUsersUseCase
+import com.app.domain.usecase.user.UpdateFcmTokenUseCase
 import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
@@ -53,6 +54,7 @@ val appModule = module{
     factory { DeleteUserUseCase(get()) }
     factory { GetEmailByNameUseCase(get()) }
     factory { GetUsersUseCase(get()) }
+    factory { UpdateFcmTokenUseCase(get()) }
     factory { SaveSongUseCase(get()) }
     factory { GetSongsUseCase(get()) }
     factory { GetSongByCodeUseCase(get()) }
@@ -72,7 +74,7 @@ val appModule = module{
 
 
     // ViewModel
-    viewModel { UserViewModel(get(),get(),get(),get(),get()) }
+    viewModel { UserViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get(),get()) }

@@ -51,7 +51,6 @@ import com.app.presentation.ui.screens.Login.ResetPasswordScreen
 import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
 import com.app.presentation.ui.screens.Login.SuccessResetPasswordScreen
 import com.app.presentation.ui.screens.ProfileScreen
-import com.app.presentation.ui.screens.PruebaScreen
 import com.app.presentation.ui.screens.ReviewsScreen
 import com.app.presentation.ui.screens.SongAdded
 import com.app.presentation.ui.screens.SongNotAdded
@@ -92,7 +91,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Prueba.route,
+            startDestination = Screen.Splash.route,
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -125,8 +124,6 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 CardUserScreen(navController,username)
             }
             composable(Screen.Followers.route){ FollowersScreen(navController) }
-
-            composable(Screen.Prueba.route){ PruebaScreen() }
         }
     }
 }

@@ -6,6 +6,7 @@ import com.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 
 class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
@@ -81,6 +82,24 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
             documentSnapshot.toObjects(User::class.java).mapNotNull { it.name }
         }catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    override suspend fun updateFcmToken(): Boolean {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
+        return try{
+            if(!currentUser.isEmailVerified) return false
+            val documentSnapshot = usersCollection.document(currentUser.uid).get().await()
+            val user = documentSnapshot.toObject(User::class.java)
+            val token = FirebaseMessaging.getInstance().token.await()
+            if(user?.fcmToken == null || user.fcmToken != token) {
+                usersCollection.document(currentUser.uid).update("fcmToken", token).await()
+                true
+            }else{
+                false
+            }
+        }catch (e: Exception){
+            false
         }
     }
 }

@@ -23,6 +23,4 @@ sealed class Screen(val route: String) {
         fun createRoute(username: String) = "carduser/$username"
     }
     data object Followers: Screen("followers")
-
-    data object Prueba: Screen("prueba")
 }

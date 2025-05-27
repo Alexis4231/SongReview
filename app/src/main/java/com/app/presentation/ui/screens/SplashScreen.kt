@@ -24,9 +24,11 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import com.app.R
 import com.app.presentation.navigation.Screen
+import com.app.presentation.viewmodel.UserViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel()) {
     val auth = FirebaseAuth.getInstance()
     val scale = remember { Animatable(0f) }
 
@@ -40,6 +42,7 @@ fun SplashScreen(navController: NavController) {
         )
         delay(1000)
         if (auth.currentUser != null) {
+            userViewModel.verifyAndUpdateToken()
             navController.navigate(Screen.Home.route) {
                 popUpTo(Screen.Splash.route) { inclusive = true }
             }
