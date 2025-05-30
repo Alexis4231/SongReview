@@ -31,6 +31,9 @@ class SongDBViewModel(
     private val _code = MutableStateFlow<String?>(null)
     val code: StateFlow<String?> = _code.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
 
     fun setTitle(title: String) {
         _song.value = _song.value.copy(
@@ -58,7 +61,9 @@ class SongDBViewModel(
 
     fun getSongs(){
         viewModelScope.launch {
+            _isLoading.value = true
             _songs.value = getSongsUseCase()
+            _isLoading.value = false
         }
     }
 

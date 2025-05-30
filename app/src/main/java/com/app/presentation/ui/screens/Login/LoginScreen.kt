@@ -1,5 +1,6 @@
 package com.app.presentation.ui.screens.Login
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -39,13 +40,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.app.R
+import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -55,7 +59,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel()) {
+fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel(), context: Context = LocalContext.current) {
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var userOrMail by remember { mutableStateOf("") }
@@ -64,140 +68,166 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
     var isLoading by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.Black),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+
+    Box(modifier = Modifier.fillMaxSize()) {
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(
             modifier = Modifier
-                .weight(1f)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo",
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+                .zIndex(1f)
+        )
         Column(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = screenWidth*0.07f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceEvenly
+                .fillMaxSize()
+                .background(color = Color.Black),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            BasicTextField(
-                value = userOrMail,
-                onValueChange = { userOrMail = it },
-                singleLine = true,
-                cursorBrush = SolidColor(Color.White),
-                textStyle = TextStyle(
-                    color = Color.White,
-                    fontSize = 18.sp
-                ),
+            Box(
                 modifier = Modifier
-                    .background(Color.Black)
-                    .padding(horizontal = screenWidth * 0.07f)
-                    .drawBehind {
-                        val strokeWidth = 2.dp.toPx()
-                        val y = size.height - strokeWidth / 2
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = strokeWidth
-                        )
-                    }
-                    .fillMaxWidth(),
-                decorationBox = { innerTextField ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(imageVector = Icons.Outlined.Person, contentDescription = "Person",tint = Color.White, modifier = Modifier.padding(0.dp,0.dp,screenWidth*0.05f,0.dp))
-                        Box(modifier = Modifier.weight(1f)) {
-                            if (userOrMail.isEmpty()) {
-                                Text("Correo electrónico", color = Color.White)
-                            }
-                            innerTextField()
-                        }
-                        IconButton(onClick = { userOrMail = "" }) {
-                            Icon(imageVector = Icons.Outlined.Cancel, contentDescription = "Cancel", tint = Color.White)
-                        }
-                    }
-                }
-            )
-            BasicTextField(
-                value = password,
-                onValueChange = { password = it},
-                singleLine = true,
-                cursorBrush = SolidColor(Color.White),
-                visualTransformation = PasswordVisualTransformation(),
-                textStyle = TextStyle(
-                    color = Color.White,
-                    fontSize = 18.sp
-                ),
+                    .weight(1f)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Column(
                 modifier = Modifier
-                    .background(Color.Black)
-                    .padding(horizontal = screenWidth * 0.07f)
-                    .drawBehind {
-                        val strokeWidth = 2.dp.toPx()
-                        val y = size.height - strokeWidth / 2
-                        drawLine(
-                            color = Color.White,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = strokeWidth
-                        )
-                    }
-                    .fillMaxWidth(),
-                decorationBox = { innerTextField ->
-                    Column {
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = screenWidth * 0.07f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                BasicTextField(
+                    value = userOrMail,
+                    onValueChange = { userOrMail = it },
+                    singleLine = true,
+                    cursorBrush = SolidColor(Color.White),
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .padding(horizontal = screenWidth * 0.07f)
+                        .drawBehind {
+                            val strokeWidth = 2.dp.toPx()
+                            val y = size.height - strokeWidth / 2
+                            drawLine(
+                                color = Color.White,
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
+                                strokeWidth = strokeWidth
+                            )
+                        }
+                        .fillMaxWidth(),
+                    decorationBox = { innerTextField ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(imageVector = Icons.Outlined.Lock, contentDescription = "Pass",tint = Color.White, modifier = Modifier.padding(0.dp,0.dp,screenWidth*0.05f,0.dp))
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Person",
+                                tint = Color.White,
+                                modifier = Modifier.padding(0.dp, 0.dp, screenWidth * 0.05f, 0.dp)
+                            )
                             Box(modifier = Modifier.weight(1f)) {
-                                if (password.isEmpty()) {
-                                    Text("Contraseña", color = Color.White)
+                                if (userOrMail.isEmpty()) {
+                                    Text("Correo electrónico", color = Color.White)
                                 }
                                 innerTextField()
-
                             }
-                            IconButton(onClick = { password = "" }) {
-                                Icon(imageVector = Icons.Outlined.Cancel, contentDescription = null, tint = Color.White)
+                            IconButton(onClick = { userOrMail = "" }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Cancel,
+                                    contentDescription = "Cancel",
+                                    tint = Color.White
+                                )
                             }
                         }
                     }
-                }
-            )
-            Text(
-                text="¿Olvidaste tu contraseña?",
-                color = Color(0xFF39D0B9),
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(0.dp,0.dp,screenWidth*0.05f,0.dp)
-                    .clickable {
-                    navController.navigate(Screen.ResetPassword.route){
-                        popUpTo(Screen.Login.route){ inclusive = true }
+                )
+                BasicTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    singleLine = true,
+                    cursorBrush = SolidColor(Color.White),
+                    visualTransformation = PasswordVisualTransformation(),
+                    textStyle = TextStyle(
+                        color = Color.White,
+                        fontSize = 18.sp
+                    ),
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .padding(horizontal = screenWidth * 0.07f)
+                        .drawBehind {
+                            val strokeWidth = 2.dp.toPx()
+                            val y = size.height - strokeWidth / 2
+                            drawLine(
+                                color = Color.White,
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
+                                strokeWidth = strokeWidth
+                            )
+                        }
+                        .fillMaxWidth(),
+                    decorationBox = { innerTextField ->
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Lock,
+                                    contentDescription = "Pass",
+                                    tint = Color.White,
+                                    modifier = Modifier.padding(
+                                        0.dp,
+                                        0.dp,
+                                        screenWidth * 0.05f,
+                                        0.dp
+                                    )
+                                )
+                                Box(modifier = Modifier.weight(1f)) {
+                                    if (password.isEmpty()) {
+                                        Text("Contraseña", color = Color.White)
+                                    }
+                                    innerTextField()
+
+                                }
+                                IconButton(onClick = { password = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Cancel,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+                        }
                     }
-                }
-            )
-        }
-        Box(
-            modifier = Modifier
-                .weight(0.8f)
-                .fillMaxWidth()
-                .padding(horizontal = screenWidth * 0.07f),
-            contentAlignment = Alignment.Center
-        ) {
+                )
+                Text(
+                    text = "¿Olvidaste tu contraseña?",
+                    color = Color(0xFF39D0B9),
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(0.dp, 0.dp, screenWidth * 0.05f, 0.dp)
+                        .clickable {
+                            navController.navigate(Screen.ResetPassword.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        }
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.8f)
+                    .fillMaxWidth()
+                    .padding(horizontal = screenWidth * 0.07f),
+                contentAlignment = Alignment.Center
+            ) {
                 Button(
                     enabled = !isLoading,
                     onClick = {
@@ -207,15 +237,19 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                             }
                         } else {
                             isLoading = true
-                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(userOrMail).matches()){
+                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(userOrMail)
+                                    .matches()
+                            ) {
                                 userViewModel.getEmail(userOrMail) { email ->
                                     if (email != null) {
                                         loginUser(email, password) { success, errorMessage ->
                                             scope.launch {
                                                 if (success) {
                                                     userViewModel.verifyAndUpdateToken()
-                                                    navController.navigate(Screen.Home.route){
-                                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                                    navController.navigate(Screen.Home.route) {
+                                                        popUpTo(Screen.Login.route) {
+                                                            inclusive = true
+                                                        }
                                                     }
                                                 } else {
                                                     isLoading = false
@@ -231,15 +265,24 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                                     }
                                 }
                             } else {
-                                loginUser(userOrMail, password) { success, errorMessage ->
-                                    scope.launch {
-                                        if (success) {
-                                            navController.navigate(Screen.Home.route)
-                                        } else {
-                                            isLoading = false
-                                            snackbarHostState.showSnackbar(errorMessage.toString())
+                                if (isInternetAvailable(context)) {
+                                    loginUser(userOrMail, password) { success, errorMessage ->
+                                        scope.launch {
+                                            if (success) {
+                                                navController.navigate(Screen.Home.route) {
+                                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                                }
+                                            } else {
+                                                isLoading = false
+                                                snackbarHostState.showSnackbar(errorMessage.toString())
+                                            }
                                         }
                                     }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Sin conexión a internet")
+                                    }
+                                    isLoading = false
                                 }
                             }
                         }
@@ -260,23 +303,24 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = koi
                             modifier = Modifier.padding(vertical = screenHeight * 0.02f)
                         )
                     }
-            }
-        }
-        Box(
-            modifier = Modifier
-                .weight(0.7f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Registrarse",
-                color = Color(0xFF39D0B9),
-                modifier = Modifier.clickable {
-                    navController.navigate(Screen.Register.route){
-                        popUpTo(Screen.Login.route){ inclusive = true }
-                    }
                 }
-            )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.7f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Registrarse",
+                    color = Color(0xFF39D0B9),
+                    modifier = Modifier.clickable {
+                        navController.navigate(Screen.Register.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }

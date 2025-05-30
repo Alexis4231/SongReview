@@ -33,6 +33,10 @@ import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
 import com.app.domain.usecase.user.GetUsersUseCase
 import com.app.domain.usecase.user.UpdateFcmTokenUseCase
+import com.app.presentation.viewmodel.DeezerAlbumViewModel
+import com.app.presentation.viewmodel.DeezerArtistsViewModel
+import com.app.presentation.viewmodel.DeezerGenreViewModel
+import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel

@@ -28,7 +28,12 @@ import com.app.presentation.viewmodel.UserViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SplashScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel()) {
+fun SplashScreen(
+    navController: NavController,
+    username: String? = null,
+    receiverUid: String? = null,
+    userViewModel: UserViewModel = koinViewModel(),
+) {
     val auth = FirebaseAuth.getInstance()
     val scale = remember { Animatable(0f) }
 
@@ -43,8 +48,14 @@ fun SplashScreen(navController: NavController, userViewModel: UserViewModel = ko
         delay(1000)
         if (auth.currentUser != null) {
             userViewModel.verifyAndUpdateToken()
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+            if(receiverUid == null) {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
+            }else{
+                navController.navigate(Screen.CardUser.createRoute(username!!)) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
             }
         } else {
             navController.navigate(Screen.Login.route) {

@@ -38,14 +38,14 @@ class RequestViewModel(
     private val _status = MutableStateFlow<Map<String, Boolean>?>(null)
     val status: StateFlow<Map<String,Boolean>?> = _status.asStateFlow()
 
-    private val _isStatusLoading = MutableStateFlow(false)
-    val isStatusLoading: StateFlow<Boolean> = _isStatusLoading.asStateFlow()
-
     private val _requests = MutableStateFlow<List<Request>>(emptyList())
     val requests: StateFlow<List<Request>> = _requests.asStateFlow()
 
     private val _usernames = MutableStateFlow<List<String>>(emptyList())
     val usernames: StateFlow<List<String>> = _usernames.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     fun setCodeIssuer(codeIssuer: String){
         _codeIssuer.value = codeIssuer
@@ -63,9 +63,9 @@ class RequestViewModel(
 
     fun getStatus(username: String){
         viewModelScope.launch {
-            _isStatusLoading.value = true
+            _isLoading.value = true
             _status.value = getStatusUseCase(username)
-            _isStatusLoading.value = false
+            _isLoading.value = false
         }
     }
 
@@ -89,13 +89,17 @@ class RequestViewModel(
 
     fun getFollowers(){
         viewModelScope.launch {
+            _isLoading.value = true
             _usernames.value = getFollowersUseCase()
+            _isLoading.value = false
         }
     }
 
     fun getRequestFollowers(){
         viewModelScope.launch {
+            _isLoading.value = true
             _usernames.value = getRequestFollowersUseCase()
+            _isLoading.value = false
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.app.presentation.ui.screens
 
 import GetUserDetailsViewModel
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.filled.HotelClass
 import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
@@ -34,6 +36,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,17 +47,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.app.R
+import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.app.presentation.viewmodel.RequestViewModel
@@ -76,7 +84,8 @@ fun CardUserScreen(
     reviewViewModel: ReviewViewModel = koinViewModel(),
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
     requestViewModel: RequestViewModel = koinViewModel(),
-    songDBViewModel: SongDBViewModel = koinViewModel()
+    songDBViewModel: SongDBViewModel = koinViewModel(),
+    context: Context = LocalContext.current
 ) {
     val reviews by reviewViewModel.publicReviews.collectAsState()
     val myUser = getUserDetailsViewModel.user.value
@@ -87,6 +96,11 @@ fun CardUserScreen(
     val density = LocalDensity.current.density
     val status = statusMap?.keys?.firstOrNull() ?: ""
     val isSender = statusMap?.values?.firstOrNull() ?: false
+    val isStatusLoading by requestViewModel.isLoading.collectAsState()
+    val isLoading by reviewViewModel.isLoading.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
 
     LaunchedEffect(Unit) {
         getUserDetailsViewModel.loadUserData()
@@ -94,118 +108,195 @@ fun CardUserScreen(
         username?.let { reviewViewModel.getReviewsByUsernameFollower(it) }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF585D5F)),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(color = Color.White)
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF585D5F)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        UserHeader(
-            name = username.toString(),
-            reviewsCount = reviews.size,
-            status = status,
-            isSender = isSender,
-            onSendRequest = {
-                myUser?.let{
-                    requestViewModel.setCodeIssuer(it.code)
-                    requestViewModel.setUsernameReceiver(username ?: "")
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF585D5F)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+    }else{
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF585D5F)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .zIndex(1f)
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF585D5F)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            UserHeader(
+                name = username.toString(),
+                reviewsCount = reviews.size,
+                status = status,
+                isSender = isSender,
+                snackbarHostState = snackbarHostState,
+                scope = scope,
+                onSendRequest = {
+                    myUser?.let {
+                        requestViewModel.setCodeIssuer(it.code)
+                        requestViewModel.setUsernameReceiver(username ?: "")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            requestViewModel.save()
+                            delay(500)
+                            requestViewModel.getStatus(username ?: "")
+                        }
+                    }
+                },
+                onAcceptRequest = {
                     CoroutineScope(Dispatchers.Main).launch {
-                        requestViewModel.save()
+                        requestViewModel.acceptRequest(username ?: "")
                         delay(500)
                         requestViewModel.getStatus(username ?: "")
+                        reviewViewModel.getReviewsByUsernameFollower(username ?: "")
+
                     }
+                },
+                onDeleteRequest = {
+                    showDeleteRequestDialog = true
+                },
+                onCancelRequest = {
+                    showCancelRequestDialog = true
                 }
-            },
-            onAcceptRequest = {
-                CoroutineScope(Dispatchers.Main).launch {
-                    requestViewModel.acceptRequest(username ?: "")
-                    delay(500)
-                    requestViewModel.getStatus(username ?: "")
-                    reviewViewModel.getReviewsByUsernameFollower(username ?: "")
+            )
 
-                }
-            },
-            onDeleteRequest = {
-                showDeleteRequestDialog = true
-            },
-            onCancelRequest = {
-                showCancelRequestDialog = true
-            }
-        )
-
-        when (status){
-            "ACCEPTED" -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(reviews) { review ->
-                        var title by remember { mutableStateOf<String?>(null) }
-                            LaunchedEffect(review.codeSong){
-                                val song = songDBViewModel.fetchSongByCode(review.codeSong)
-                                title = song?.title ?: ""
-                            }
-                            Card(
+            when (status) {
+                "ACCEPTED" -> {
+                    if(reviews.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(color = Color(0xFF585D5F)),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF44A898)),
-                                onClick = { navController.navigate(Screen.Reviews.createRoute(review.codeSong)) }
+                                    .weight(2f),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(
+                                Icon(
+                                    imageVector = Icons.Default.SentimentNeutral,
+                                    contentDescription = "Search",
+                                    tint = Color.White,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "Este usuario aún no ha comentado ninguna canción",
+                                    color = Color.White,
+                                    fontSize = (10 * density).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 24.dp)
+                                )
+                            }
+                        }
+                    }else{
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(reviews) { review ->
+                                var title by remember { mutableStateOf<String?>(null) }
+                                LaunchedEffect(review.codeSong) {
+                                    val song = songDBViewModel.fetchSongByCode(review.codeSong)
+                                    title = song?.title ?: ""
+                                }
+                                Card(
                                     modifier = Modifier
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Surface(
-                                        modifier = Modifier.size(40.dp),
-                                        shape = CircleShape,
-                                        color = Color(0xFFD0C4FF)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Text(
-                                                text = username?.toUpperCase()?.firstOrNull()?.toString() ?: "",
-                                                color = Color.Black
+                                        .fillMaxWidth()
+                                        .padding(8.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(
+                                            0xFF44A898
+                                        )
+                                    ),
+                                    onClick = {
+                                        if(isInternetAvailable(context)) {
+                                            navController.navigate(
+                                                Screen.Reviews.createRoute(
+                                                    review.codeSong
+                                                )
                                             )
+                                        }else{
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar("Sin conexión a internet")
+                                            }
                                         }
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = title ?: "", fontWeight = FontWeight.SemiBold, color = Color.White, fontSize = 20.sp)
-                                        username?.let {
-                                            Text(
-                                                text = it,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = Color.White
-                                            )
-                                        }
-                                        Row {
-                                            repeat(5) { index ->
-                                                Icon(
-                                                    imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
-                                                    contentDescription = "Star",
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(20.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            modifier = Modifier.size(40.dp),
+                                            shape = CircleShape,
+                                            color = Color(0xFFD0C4FF)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = username?.toUpperCase()?.firstOrNull()
+                                                        ?.toString() ?: "",
+                                                    color = Color.Black
                                                 )
                                             }
                                         }
-                                        Text(
-                                            text = review.comment,
-                                            color = Color.White
-                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = title ?: "",
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Color.White,
+                                                fontSize = 20.sp
+                                            )
+                                            username?.let {
+                                                Text(
+                                                    text = it,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = Color.White
+                                                )
+                                            }
+                                            Row {
+                                                repeat(5) { index ->
+                                                    Icon(
+                                                        imageVector = if (index < review.rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                                        contentDescription = "Star",
+                                                        tint = Color.White,
+                                                        modifier = Modifier.size(20.dp)
+                                                    )
+                                                }
+                                            }
+                                            Text(
+                                                text = review.comment,
+                                                color = Color.White
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+
                 "PENDING" -> {
                     Column(
                         modifier = Modifier
@@ -241,6 +332,7 @@ fun CardUserScreen(
                         }
                     }
                 }
+
                 else -> {
                     Column(
                         modifier = Modifier
@@ -278,7 +370,7 @@ fun CardUserScreen(
                 }
             }
         }
-        if(showDeleteRequestDialog){
+        if (showDeleteRequestDialog) {
             showDeleteRequestPopup(
                 onConfirm = {
                     showDeleteRequestDialog = false
@@ -293,7 +385,7 @@ fun CardUserScreen(
                 }
             )
         }
-        if(showCancelRequestDialog){
+        if (showCancelRequestDialog) {
             showCancelRequestPopup(
                 onConfirm = {
                     showCancelRequestDialog = false
@@ -309,6 +401,7 @@ fun CardUserScreen(
             )
         }
     }
+}
 
 @Composable
 fun UserHeader(
@@ -316,13 +409,16 @@ fun UserHeader(
     status: String?,
     isSender: Boolean,
     reviewsCount: Int,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
     onSendRequest: () -> Unit,
     onAcceptRequest: () -> Unit,
     onDeleteRequest: () -> Unit,
     onCancelRequest: () -> Unit,
-    requestViewModel: RequestViewModel = koinViewModel()
+    requestViewModel: RequestViewModel = koinViewModel(),
+    context: Context = LocalContext.current
 ) {
-    val statusLoading by requestViewModel.isStatusLoading.collectAsState()
+    val statusLoading by requestViewModel.isLoading.collectAsState()
 
     val (colorButton, colorText, statusMessage) = when (status){
         "PENDING" -> if(isSender){
@@ -367,17 +463,25 @@ fun UserHeader(
                     modifier = Modifier
                         .align(Alignment.End)
                         .clickable {
-                            when (status){
-                                "PENDING" -> if(!isSender){
-                                    onAcceptRequest()
-                                    }else{
+                            if(isInternetAvailable(context)) {
+                                when (status) {
+                                    "PENDING" -> if (!isSender) {
+                                        onAcceptRequest()
+                                    } else {
                                         onCancelRequest()
                                     }
-                                "ACCEPTED" -> {
-                                    onDeleteRequest()
+
+                                    "ACCEPTED" -> {
+                                        onDeleteRequest()
+                                    }
+
+                                    else -> {
+                                        onSendRequest()
+                                    }
                                 }
-                                else -> {
-                                    onSendRequest()
+                            }else{
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Sin conexión a internet")
                                 }
                             }
                         }

@@ -1,5 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions";
 import * as admin from "firebase-admin";
 
@@ -85,11 +86,59 @@ export const sendFriendRequestNotification = onDocumentCreated("requests/{reques
                 title: "Nueva solicitud de amistad",
                 body: `${fromName} te ha enviado una solicitud de amistad`,
             },
+            data: {
+                username: fromName,
+                receiverUid: request.codeReceiver,
+            },
             token: fcmToken,
         };
         await admin.messaging().send(message);
-        logger.info(`Notificacion enviada a ${toUser?.email || 'receptor desconocido'}`);
+        logger.info(`Notificacion de peticion enviada a ${toUser?.email || 'receptor desconocido'}`);
     }catch(error){
         logger.error("Error al enviar la notificacion de solicitud de amistad:",error);
+    }
+});
+
+export const sendFriendAcceptedNotification = onDocumentUpdated("requests/{requestId}", async (event) => {
+    try{
+        const beforeData = event.data?.before?.data();
+        const afterData = event.data?.after?.data();
+
+        if(!beforeData || !afterData){
+            logger.error("Error al obtener los datos de la actualizacion");
+            return;
+        }
+
+        if(beforeData.status === "PENDING" && afterData.status === "ACCEPTED"){
+            const fromUserDoc = await admin.firestore().collection("users").doc(afterData.codeIssuer).get();
+            const toUserDoc = await admin.firestore().collection("users").doc(afterData.codeReceiver).get();
+            if(!fromUserDoc.exists || !toUserDoc.exists){
+                logger.error("Uno de los usuarios no existe");
+                return;
+            }
+            const fromUser = fromUserDoc.data();
+            const toUser = toUserDoc.data();
+            const fcmToken = fromUser?.fcmToken;
+            if(!fcmToken){
+                logger.warn("El usuario receptor no tiene el un token FCM");
+                return;
+            }
+            const fromName = toUser?.name || "Un usuario";
+            const message = {
+                notification:{
+                    title: "Solicitud de amistad aceptada",
+                    body: `${fromName} ha aceptado tu solicitud de amistad`,
+                },
+                data: {
+                    username: fromName,
+                    receiverUid: afterData.codeReceiver,
+                },
+                token: fcmToken,
+            };
+            await admin.messaging().send(message);
+            logger.info(`Notificacion de aceptacion enviada a ${fromUser?.email || 'receptor desconocido'}`);
+        }
+    }catch(error){
+        logger.error("Error al enviar la notificacion de aceptacion de amistad:",error);
     }
 });

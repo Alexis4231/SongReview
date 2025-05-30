@@ -33,6 +33,9 @@ class ReviewViewModel(
     private val _publicReviews  = MutableStateFlow<List<PublicReview>>(emptyList())
     val publicReviews: StateFlow<List<PublicReview>> = _publicReviews.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     fun setCodeUser(codeUser: String) {
         _review.value = _review.value.copy(
             codeUser = codeUser
@@ -58,19 +61,25 @@ class ReviewViewModel(
 
     fun getReviewByCodeSong(codeSong: String){
         viewModelScope.launch {
+            _isLoading.value = true
             _publicReviews.value = getReviewsByCodeSongUseCase(codeSong)
+            _isLoading.value = false
         }
     }
 
     fun getReviewsByCodeUser(codeUser: String){
         viewModelScope.launch {
+            _isLoading.value = true
             _reviews.value = getReviewsByCodeUserUseCase(codeUser)
+            _isLoading.value = false
         }
     }
 
     fun getReviewsByUsernameFollower(username: String){
         viewModelScope.launch {
+            _isLoading.value = true
             _publicReviews.value = getReviewsByUsernameFollowerUserCase(username)
+            _isLoading.value = false
         }
     }
 }

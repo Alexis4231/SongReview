@@ -1,5 +1,6 @@
 package com.app.presentation.ui.screens
 
+import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -65,6 +68,7 @@ import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerAlbumViewModel
 import com.app.presentation.viewmodel.DeezerArtistsViewModel
@@ -86,7 +90,8 @@ fun AddScreen(
     deezerGenreViewModel: DeezerGenreViewModel = viewModel(),
     onSearchArtist: (String) -> Unit = {},
     onSearchSong: (String) -> Unit = {},
-    songDBViewModel: SongDBViewModel = koinViewModel()
+    songDBViewModel: SongDBViewModel = koinViewModel(),
+    context: Context = LocalContext.current
 ){
     var showDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -178,6 +183,7 @@ fun AddScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
+                    .zIndex(1f)
             )
             Text(
                 text = "Añadir nueva canción",
@@ -537,7 +543,10 @@ fun AddScreen(
                     fontSize = 20.sp,
                     modifier = Modifier.weight(0.3f)
                 )
-                if(selectedStyle.equals("Seleccionar estilo")){
+                if(selectedStyle == "Seleccionar estilo"){
+                    if(cardBlockedStyle && genre == null){
+                        CircularProgressIndicator(color = Color.White)
+                    }else{
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = !expanded },
@@ -584,6 +593,7 @@ fun AddScreen(
                             }
                         }
                     }
+                    }
                 }else{
                     Card(
                         modifier = Modifier
@@ -627,28 +637,44 @@ fun AddScreen(
         ) {
             Button(
                 onClick = {
-                    if(!song.equals("") && !artist.equals("") && !selectedStyle.equals("")) {
-                        songsDB.forEach{songDB ->
-                            if(songDB.title.equals(song) && songDB.artist.equals(artist)){
-                                addSong = false
+                    if(isInternetAvailable(context)) {
+                        if (!song.equals("") && !artist.equals("") && genre != null) {
+                            songsDB.forEach { songDB ->
+                                if (songDB.title.equals(song) && songDB.artist.equals(artist)) {
+                                    addSong = false
+                                }
                             }
-                        }
-                        if(addSong) {
-                            scope.launch {
-                                songDBViewModel.setTitle(song)
-                                songDBViewModel.setArtist(artist)
-                                songDBViewModel.setGenre(selectedStyle)
-                                songDBViewModel.save()
-                                navController.navigate(Screen.SongAdded.createRoute(song,artist))
+                            if (addSong) {
+                                scope.launch {
+                                    songDBViewModel.setTitle(song)
+                                    songDBViewModel.setArtist(artist)
+                                    songDBViewModel.setGenre(selectedStyle)
+                                    songDBViewModel.save()
+                                    navController.navigate(
+                                        Screen.SongAdded.createRoute(
+                                            song,
+                                            artist
+                                        )
+                                    )
+                                }
+                            } else {
+                                scope.launch {
+                                    navController.navigate(
+                                        Screen.SongNotAdded.createRoute(
+                                            song,
+                                            artist
+                                        )
+                                    )
+                                }
                             }
-                        }else{
+                        } else {
                             scope.launch {
-                                navController.navigate(Screen.SongNotAdded.createRoute(song,artist))
+                                snackbarHostState.showSnackbar("Introduce todos los datos para añadir una canción")
                             }
                         }
                     }else{
                         scope.launch {
-                            snackbarHostState.showSnackbar("Introduce todos los datos para añadir una canción")
+                            snackbarHostState.showSnackbar("Sin conexión a internet")
                         }
                     }
                 },

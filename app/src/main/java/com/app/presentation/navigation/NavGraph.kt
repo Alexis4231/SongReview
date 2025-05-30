@@ -1,5 +1,6 @@
 package com.app.presentation.navigation
 
+import ReviewsScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
@@ -51,17 +52,22 @@ import com.app.presentation.ui.screens.Login.ResetPasswordScreen
 import com.app.presentation.ui.screens.Login.SuccessRegisterScreen
 import com.app.presentation.ui.screens.Login.SuccessResetPasswordScreen
 import com.app.presentation.ui.screens.ProfileScreen
-import com.app.presentation.ui.screens.ReviewsScreen
 import com.app.presentation.ui.screens.SongAdded
 import com.app.presentation.ui.screens.SongNotAdded
 import com.app.presentation.ui.screens.SplashScreen
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.auth.FirebaseAuth
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
+fun NavGraph(
+    navController: NavController,
+    username: String? = null,
+    receiverUid: String? = null,
+    navBarViewModel: NavBarViewModel = viewModel()
+) {
     val screensWithoutNavBar = listOf(
         Screen.Login.route,
         Screen.Register.route,
@@ -96,7 +102,7 @@ fun NavGraph(navBarViewModel: NavBarViewModel = viewModel()) {
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            composable(Screen.Splash.route){ SplashScreen(navController) }
+            composable(Screen.Splash.route){ SplashScreen(navController, username, receiverUid) }
             composable(Screen.Login.route) { LoginScreen(navController) }
             composable(Screen.Register.route) { RegisterScreen(navController) }
             composable(Screen.SuccesRegister.route) { SuccessRegisterScreen(navController) }

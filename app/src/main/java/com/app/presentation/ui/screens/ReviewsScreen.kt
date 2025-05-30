@@ -1,6 +1,6 @@
-package com.app.presentation.ui.screens
-
 import GetUserDetailsViewModel
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
@@ -60,70 +60,183 @@ import com.app.presentation.viewmodel.SongDBViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Mood
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SignalWifiOff
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.exoplayer.ExoPlayer
 import com.app.domain.model.PublicReview
+import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerSongViewModel
 import com.app.presentation.viewmodel.SpotifyLinkViewModel
 import com.app.presentation.viewmodel.SpotifyTokenViewModel
 import com.app.presentation.viewmodel.UserViewModel
 import com.app.presentation.viewmodel.YoutubeLinkViewModel
+import kotlinx.coroutines.CoroutineScope
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.roundToInt
+import androidx.media3.common.MediaItem
+import kotlinx.coroutines.delay
 
 @Composable
-fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: SongDBViewModel = koinViewModel(), reviewViewModel: ReviewViewModel = koinViewModel(), userViewModel: UserViewModel = koinViewModel() ) {
+fun ReviewsScreen(
+    navController: NavController,
+    code: String?,
+    songDBViewModel: SongDBViewModel = koinViewModel(),
+    reviewViewModel: ReviewViewModel = koinViewModel(),
+    userViewModel: UserViewModel = koinViewModel(),
+    context: Context = LocalContext.current
+) {
     val song by songDBViewModel.song.collectAsState()
     val reviews by reviewViewModel.publicReviews.collectAsState()
+    val scope = rememberCoroutineScope()
     var snackbarHostState = remember { SnackbarHostState() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val density = LocalDensity.current.density
+    val loadingReviews by reviewViewModel.isLoading.collectAsState()
+
 
     LaunchedEffect(Unit) {
         code?.let { songDBViewModel.getSongByCode(it) }
         code?.let { reviewViewModel.getReviewByCodeSong(it) }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF585D5F))
-    ){
-        snackbarHostState = SongHeader(song.title)
-        LazyColumn (
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF585D5F)),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            item {
-                code?.let {
-                    val rating = if(reviews.isNotEmpty()) {
-                        reviews.map { it.rating }.average().roundToInt()
-                    }else {
-                        0
-                    }
-                    SongCard(song.title, song.artist, song.genre, rating)
-                    CardPublishReview(it, snackbarHostState, navController)
-                }
+    val isLoading = song.title.isEmpty()
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+    if(isInternetAvailable(context)) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF585D5F)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize()) {
+                SnackbarHost(
+                    hostState = snackbarHostState,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = 10.dp)
+                        .zIndex(1f)
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF585D5F))
                 ) {
-                    Text(text = "Reseñas", fontSize = 30.sp, color = Color.White)
+                    snackbarHostState = SongHeader(song.title)
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF585D5F)),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        item {
+                            code?.let {
+                                val rating = if (reviews.isNotEmpty()) {
+                                    reviews.map { it.rating }.average().roundToInt()
+                                } else {
+                                    0
+                                }
+                                SongCard(song.title, song.artist, song.genre, rating)
+                                CardPublishReview(it, snackbarHostState, scope, navController)
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp, horizontal = 10.dp)
+                            ) {
+                                Text(text = "Reseñas", fontSize = 30.sp, color = Color.White)
+                            }
+                        }
+                        if (loadingReviews) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color = Color(0xFF585D5F)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.White)
+                                }
+                            }
+                        } else {
+                            if (reviews.isNotEmpty()) {
+                                items(reviews) { review ->
+                                    CardReviews(review, navController, snackbarHostState, scope)
+                                }
+                            } else {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center,
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Mood,
+                                                contentDescription = "No reviews",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(64.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = "Añade el primer comentario",
+                                                color = Color.White,
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-
-            items(reviews) { review ->
-                CardReviews(review)
+        }
+    }else{
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF585D5F)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Filled.SignalWifiOff,
+                    contentDescription = "SignalWifiOff",
+                    tint = Color.White,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Text(
+                    text = "Sin conexión a internet",
+                    color = Color.White,
+                    fontSize = 18.sp
+                )
             }
         }
     }
@@ -133,31 +246,34 @@ fun ReviewsScreen(navController: NavController, code: String?, songDBViewModel: 
 fun SongHeader(title: String): SnackbarHostState{
     val snackbarHostState = remember { SnackbarHostState() }
 
-    SnackbarHost(
-        hostState = snackbarHostState,
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp)
-    ) {
-        Text(
-            text= title,
-            fontSize = 30.sp,
-            color = Color.White,
+    Box{
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .zIndex(1f)
+        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center
-        )
+                .padding(vertical = 10.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 30.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center
+            )
+        }
     }
     return snackbarHostState
 }
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun SongCard(
     title: String,
@@ -181,76 +297,125 @@ fun SongCard(
 
     LaunchedEffect(artist) {
         deezerSongViewModel.loadSong("""track:"$title" artist:"$artist"""")
-        youtubeLinkViewModel.loadLink("$artist  $title")
+        youtubeLinkViewModel.loadLink("$artist $title")
     }
 
     LaunchedEffect(spotifyToken.value) {
-        spotifyToken.value?.let { spotifyLinkViewModel.loadLink(it.access_token,""""track:"$title" artist:"$artist"""") }
+        val token = spotifyToken.value
+        if(token != null){
+            spotifyLinkViewModel.loadLink(token.access_token, """track:"$title" artist:"$artist"""")
+        }
     }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF39D0B9)),
-    ){
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ){
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Text(
-                    text = "Titulo: ${title}",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    modifier = Modifier.weight(1f)
-                )
-                Row{
-                    repeat(5){index ->
-                        Icon(
-                            imageVector = if(index < rating) Icons.Default.Star else Icons.Default.StarBorder,
-                            contentDescription = "Rating",
-                            tint = Color.White
+    val isDeezerLoaded = deezerSong.value != null
+    val isSpotifyLoaded = spotifyLink != null
+    val isYoutubeLoaded = youtubeLink != null
+    val allLinksLoaded = isDeezerLoaded && isSpotifyLoaded && isYoutubeLoaded
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF39D0B9)),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Titulo: ${title}",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Row {
+                        repeat(5) { index ->
+                            Icon(
+                                imageVector = if (index < rating) Icons.Default.Star else Icons.Default.StarBorder,
+                                contentDescription = "Rating",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Artista: $artist", color = Color.White)
+                    Text(text = "Género: $genre", color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                if(allLinksLoaded) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        spotifyLink?.let {
+                            MusicPlatformButton(
+                                R.drawable.spotify,
+                                "Spotify",
+                                it.spotify
+                            )
+                        }
+                        deezerSong.value?.let {
+                            MusicPlatformButton(
+                                R.drawable.deezer,
+                                "Deezer",
+                                it.link
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        MusicPlatformButton(
+                            R.drawable.amazon,
+                            "Amazon\nMusic",
+                            "https://music.amazon.com/search/" + artist.replace(
+                                " ",
+                                "+"
+                            ) + "+" + title.replace(" ", "+")
                         )
+                        youtubeLink?.let {
+                            deezerSong.value?.let { it1 ->
+                                MusicPlatformButton(
+                                    R.drawable.youtube,
+                                    "Youtube",
+                                    "https://www.youtube.com/watch?v=" + it.videoId
+                                )
+                            }
+                        }
+                    }
+                        deezerSong.value?.preview?.let{previewUrl ->
+                            Spacer(modifier = Modifier.height(16.dp))
+                            PreviewPlayer(previewUrl)
+                    }
+                }else{
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF39D0B9)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                Text(text = "Artista: $artist", color = Color.White)
-                Text(text="Género: $genre", color = Color.White)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                spotifyLink?.let { MusicPlatformButton(R.drawable.spotify , "Spotify", it.spotify) }
-                deezerSong.value?.let { MusicPlatformButton(R.drawable.deezer , "Deezer", it.link) }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
-                MusicPlatformButton(R.drawable.amazon , "Amazon\nMusic", "https://music.amazon.com/search/"+artist.replace(" ","+")+"+"+title.replace(" ","+"))
-                youtubeLink?.let { MusicPlatformButton(R.drawable.youtube , "Youtube", "https://www.youtube.com/watch?v="+it.videoId) }
-            }
         }
-    }
 }
 
 @Composable
@@ -282,9 +447,11 @@ fun MusicPlatformButton(@DrawableRes iconRes: Int, name: String, link: String){
 fun CardPublishReview(
     code: String,
     snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
     navController: NavController,
     reviewViewModel: ReviewViewModel = koinViewModel(),
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
+    context: Context = LocalContext.current
 ){
     LaunchedEffect(Unit) {
         getUserDetailsViewModel.loadUserData()
@@ -352,27 +519,38 @@ fun CardPublishReview(
 
             Button(
                 onClick = {
-                    if(textReview.text.isEmpty()){
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Introduce un comentario")
-                        }
-                    }else if(punctuation == 0){
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Introduce una puntuación")
-                        }
-                    }else {
-                        if (user != null) {
-                            reviewViewModel.setCodeUser(user.code)
-                            val publicReview = PublicReview(codeSong = code, rating = punctuation, comment = textReview.text, username = user.name)
-                            reviewViewModel.setPublicReview(publicReview)
-                            reviewViewModel.save()
-                            textReview = TextFieldValue("")
-                            punctuation = 0
-                            navController.navigate(Screen.Reviews.createRoute(code)) {
-                                popUpTo(Screen.Reviews.createRoute(code)) { inclusive = true }
+                    if(isInternetAvailable(context)) {
+                        if (textReview.text.isEmpty()) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Introduce un comentario")
+                            }
+                        } else if (punctuation == 0) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Introduce una puntuación")
                             }
                         } else {
-                            showDialog = true
+                            if (user != null) {
+                                reviewViewModel.setCodeUser(user.code)
+                                val publicReview = PublicReview(
+                                    codeSong = code,
+                                    rating = punctuation,
+                                    comment = textReview.text,
+                                    username = user.name
+                                )
+                                reviewViewModel.setPublicReview(publicReview)
+                                reviewViewModel.save()
+                                textReview = TextFieldValue("")
+                                punctuation = 0
+                                navController.navigate(Screen.Reviews.createRoute(code)) {
+                                    popUpTo(Screen.Reviews.createRoute(code)) { inclusive = true }
+                                }
+                            } else {
+                                showDialog = true
+                            }
+                        }
+                    }else{
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Sin conexión a internet")
                         }
                     }
                 },
@@ -394,7 +572,13 @@ fun CardPublishReview(
 }
 
 @Composable
-fun CardReviews(review: PublicReview){
+fun CardReviews(
+    review: PublicReview,
+    navController: NavController,
+    snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope,
+    context: Context = LocalContext.current
+){
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -411,7 +595,18 @@ fun CardReviews(review: PublicReview){
                 shape = CircleShape,
                 color = Color.White
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.clickable {
+                        if(isInternetAvailable(context)){
+                            navController.navigate(Screen.CardUser.createRoute(review.username))
+                        }else{
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Sin conexión a internet")
+                            }
+                        }
+                    }
+                ) {
                     Text(
                         text = review.username.toUpperCase().firstOrNull()?.toString() ?: "",
                         fontWeight = FontWeight.Bold,
@@ -421,7 +616,20 @@ fun CardReviews(review: PublicReview){
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = review.username, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(
+                    text = review.username,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    modifier = Modifier.clickable {
+                        if(isInternetAvailable(context)){
+                        navController.navigate(Screen.CardUser.createRoute(review.username))
+                        }else{
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Sin conexión a internet")
+                            }
+                        }
+                    }
+                )
                 Row {
                     repeat(5) { index ->
                         Icon(
@@ -457,6 +665,71 @@ fun showErrorPopup(
                     Text("Vale")
                 }
             }
+        )
+    }
+}
+
+@Composable
+fun PreviewPlayer(previewUrl: String){
+    val context = LocalContext.current
+    val exoPlayer = remember{
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(previewUrl))
+            prepare()
+        }
+    }
+
+    var isPlaying by remember { mutableStateOf(false) }
+    var playbackPosition by remember {mutableStateOf(0L)}
+    var duration by remember {mutableStateOf(0L)}
+
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    LaunchedEffect(isPlaying){
+        while(isPlaying){
+            playbackPosition = exoPlayer.currentPosition
+            duration = exoPlayer.duration
+            delay(500)
+        }
+    }
+
+    Column(modifier = Modifier.padding(16.dp)){
+        IconButton(
+            onClick = {
+                if(isPlaying){
+                    exoPlayer.pause()
+                }else{
+                    exoPlayer.play()
+                }
+                isPlaying = !isPlaying
+            },
+            modifier = Modifier
+                .size(64.dp)
+                .align(Alignment.CenterHorizontally)
+        ){
+            Icon(
+                imageVector = if(isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = if(isPlaying) "Pause" else "Start",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        Slider(
+            value = playbackPosition.coerceAtLeast(0L).toFloat(),
+            onValueChange = {
+                playbackPosition = it.toLong()
+                exoPlayer.seekTo(playbackPosition)
+            },
+            valueRange = 0f..(duration.coerceAtLeast(1L).toFloat()),
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary
+            )
         )
     }
 }
