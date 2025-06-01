@@ -100,11 +100,13 @@ fun ReviewsScreen(
     songDBViewModel: SongDBViewModel = koinViewModel(),
     reviewViewModel: ReviewViewModel = koinViewModel(),
     userViewModel: UserViewModel = koinViewModel(),
+    tokenViewModel: SpotifyTokenViewModel = viewModel(),
     context: Context = LocalContext.current
 ) {
     val song by songDBViewModel.song.collectAsState()
     val reviews by reviewViewModel.publicReviews.collectAsState()
     val scope = rememberCoroutineScope()
+    val token by tokenViewModel.token.collectAsState()
     var snackbarHostState = remember { SnackbarHostState() }
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -112,12 +114,17 @@ fun ReviewsScreen(
     val loadingReviews by reviewViewModel.isLoading.collectAsState()
 
 
-    LaunchedEffect(Unit) {
-        code?.let { songDBViewModel.getSongByCode(it) }
-        code?.let { reviewViewModel.getReviewByCodeSong(it) }
+    LaunchedEffect(code) {
+        code?.let {
+            songDBViewModel.getSongByCode(it)
+            reviewViewModel.getReviewByCodeSong(it)
+        }
+        if(token == null){
+            tokenViewModel.loadToken()
+        }
     }
 
-    val isLoading = song.title.isEmpty()
+    val isLoading = song.title.isEmpty() || token == null
 
     if(isInternetAvailable(context)) {
         if (isLoading) {

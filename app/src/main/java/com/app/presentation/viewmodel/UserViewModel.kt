@@ -6,10 +6,8 @@ import com.app.domain.model.SongDB
 import com.app.domain.model.User
 import com.app.domain.usecase.review.GetReviewsUseCase
 import com.app.domain.usecase.user.DeleteUserUseCase
-import com.app.domain.usecase.user.ExistUsernameUseCase
 import com.app.domain.usecase.user.GetEmailByNameUseCase
 import com.app.domain.usecase.user.GetUserByCodeUseCase
-import com.app.domain.usecase.user.GetUsersUseCase
 import com.app.domain.usecase.user.UpdateFcmTokenUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
@@ -20,42 +18,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class UserViewModel(
-    private val existUsernameUseCase: ExistUsernameUseCase,
     private val getEmailByNameUseCase: GetEmailByNameUseCase,
     private val deleteUserUseCase: DeleteUserUseCase,
     private val getUserByCodeUseCase: GetUserByCodeUseCase,
-    private val getUsersUseCase: GetUsersUseCase,
     private val updateFcmTokenUseCase: UpdateFcmTokenUseCase
 ) : ViewModel() {
 
     private val _user = MutableStateFlow(User("", "", ""))
     val user: StateFlow<User> = _user
 
-    private val _names = MutableStateFlow<List<String>>(emptyList())
-    val names: StateFlow<List<String>> = _names.asStateFlow()
-
-    fun avaliableUsername(name: String, onSuccess: () -> Unit, onFail : () -> Unit) {
-        viewModelScope.launch {
-            if (!existUsernameUseCase(name)) {
-                onSuccess()
-            } else {
-                onFail()
-            }
-        }
-    }
-
     fun deleteUser(code: String){
         viewModelScope.launch {
             deleteUserUseCase(code)
         }
     }
-
-    fun getUsers(){
-        viewModelScope.launch {
-            _names.value = getUsersUseCase()
-        }
-    }
-
 
     fun getEmail(name: String,result: (String?) -> Unit){
         viewModelScope.launch {

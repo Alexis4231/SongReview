@@ -55,16 +55,20 @@ import com.app.domain.model.User
 import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.UserViewModel
+import com.app.presentation.viewmodel.UsernameViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import okhttp3.internal.wait
 import org.koin.androidx.compose.koinViewModel
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel(), context: Context = LocalContext.current) {
+fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = koinViewModel(), usernameViewModel: UsernameViewModel = koinViewModel(), context: Context = LocalContext.current) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -289,16 +293,31 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                                 }
                             } else {
                                 if (isInternetAvailable(context)) {
-                                    userViewModel.avaliableUsername(
+                                    usernameViewModel.avaliableUsername(
                                         name,
                                         {
-                                            registerUser(email, password, name) { success ->
+                                            registerUser(
+                                                email,
+                                                password,
+                                                name
+                                            ) { success, codeUser ->
                                                 scope.launch {
-                                                    if (success) {
+                                                    if (success && codeUser != null) {
+                                                        usernameViewModel.setName(name)
+                                                        usernameViewModel.setCodeUser(codeUser)
+                                                        usernameViewModel.save()
                                                         navController.navigate(Screen.SuccesRegister.route)
                                                     } else {
                                                         isLoading = false
-                                                        snackbarHostState.showSnackbar("Error al crear el usuario")
+                                                        when (codeUser) {
+                                                            "EMAIL_ALREADY_IN_USE" -> {
+                                                                snackbarHostState.showSnackbar("El correo eléctronico introducido está en uso")
+                                                            }
+
+                                                            else -> {
+                                                                snackbarHostState.showSnackbar("Error al crear el usuario")
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -357,7 +376,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
     }
 }
 
-fun registerUser(email: String, password: String, name: String, onResult: (Boolean) -> Unit) {
+fun registerUser(email: String, password: String, name: String, onResult: (Boolean, String?) -> Unit) {
     val auth = FirebaseAuth.getInstance()
     val firestore = FirebaseFirestore.getInstance()
 
@@ -384,21 +403,28 @@ fun registerUser(email: String, password: String, name: String, onResult: (Boole
                                             .addOnCompleteListener { verifyTask ->
                                                 if (verifyTask.isSuccessful) {
                                                     auth.signOut()
-                                                    onResult(true)
+                                                    onResult(true, currentUser.uid)
                                                 } else {
-                                                    onResult(false)
+                                                    onResult(false, null)
                                                 }
                                             }
                                     }
-                                    .addOnFailureListener { _ ->
-                                        onResult(false)
+                                    .addOnFailureListener {
+                                        onResult(false, null)
                                     }
                             } else {
-                                onResult(false)
+                                onResult(false, null)
                             }
                         }
                 } else {
-                    onResult(false)
+                    onResult(false, null)
+                }
+            } else {
+                val exception = task.exception
+                if (exception is FirebaseAuthUserCollisionException) {
+                    onResult(false, "EMAIL_ALREADY_IN_USE")
+                } else {
+                    onResult(false, null)
                 }
             }
         }

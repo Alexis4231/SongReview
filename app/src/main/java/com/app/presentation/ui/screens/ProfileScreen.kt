@@ -43,6 +43,8 @@ import androidx.compose.ui.zIndex
 import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.SongDBViewModel
+import com.app.presentation.viewmodel.UsernameViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -53,6 +55,7 @@ fun ProfileScreen(
     navController: NavController,
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
     userViewModel: UserViewModel = koinViewModel(),
+    usernameViewModel: UsernameViewModel = koinViewModel(),
     reviewViewModel: ReviewViewModel = koinViewModel(),
     context: Context = LocalContext.current
 ) {
@@ -124,7 +127,7 @@ fun ProfileScreen(
 
                 when (selectedProfileItem) {
                     0 -> ReviewsContent(navController, user, snackbarHostState, scope)
-                    1 -> profileSettingsContent(navController, user, userViewModel, snackbarHostState, scope)
+                    1 -> profileSettingsContent(navController, user, userViewModel,usernameViewModel, snackbarHostState, scope)
                 }
             }
         }
@@ -332,6 +335,7 @@ fun profileSettingsContent(
     navController: NavController,
     user: User,
     userViewModel: UserViewModel,
+    usernameViewModel: UsernameViewModel,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
     context: Context = LocalContext.current
@@ -404,7 +408,7 @@ fun profileSettingsContent(
         showDeleteUserPopup(
             onConfirm = {
                 showDeleteUserDialog = false
-                deleteUser(navController, user, userViewModel)
+                deleteUser(navController, user, userViewModel, usernameViewModel)
             },
             onDismiss = {
                 showDeleteUserDialog = false
@@ -443,15 +447,11 @@ fun showDeleteUserPopup(
 }
 
 
-fun deleteUser(navController: NavController, userDelete: User, userViewModel: UserViewModel){
+fun deleteUser(navController: NavController, userDelete: User, userViewModel: UserViewModel, usernameViewModel: UsernameViewModel){
     val user = FirebaseAuth.getInstance().currentUser
-    user?.delete()?.addOnCompleteListener{task ->
-        if(task.isSuccessful){
-            userViewModel.deleteUser(userDelete.code)
-            Log.d("User","Usuario eliminado exitosamente")
-            LogOut(navController)
-        }else{
-            Log.e("User","Error al eliminar el usuario")
-        }
+    usernameViewModel.deleteUser()
+    userViewModel.deleteUser(userDelete.code)
+    user?.delete()?.addOnCompleteListener{
+        LogOut(navController)
     }
 }

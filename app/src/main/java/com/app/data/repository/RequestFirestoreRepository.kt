@@ -1,8 +1,8 @@
 package com.app.data.repository
 
 import com.app.domain.model.Request
-import com.app.domain.model.Review
 import com.app.domain.model.User
+import com.app.domain.model.Username
 import com.app.domain.repository.RequestRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -20,25 +20,19 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
         return try{
             if(!currentUser.isEmailVerified) return false
-            val querySnapshot = Firebase.firestore.collection("users")
+            val querySnapshot = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name",usernameReceiver)
                 .get()
                 .await()
             val receiverDoc = querySnapshot.documents.firstOrNull() ?: return false
-            val codeReceiver = receiverDoc.id
+            val codeReceiver = receiverDoc.getString("codeUser") ?: return false
             val existingRequestLeft = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("codeReceiver", codeReceiver)
                 .limit(1)
                 .get()
                 .await()
-            val existingRequestRight = requestsCollection
-                .whereEqualTo("codeIssuer", codeReceiver)
-                .whereEqualTo("codeReceiver", currentUser.uid)
-                .limit(1)
-                .get()
-                .await()
-            if(!existingRequestLeft.isEmpty || !existingRequestRight.isEmpty){
+            if(!existingRequestLeft.isEmpty){
                 return false
             }
             val request = Request(
@@ -57,12 +51,12 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return null
         return try {
             if (!currentUser.isEmailVerified) return null
-            val querySnapshot = Firebase.firestore.collection("users")
+            val querySnapshot = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name", username)
                 .get()
                 .await()
             val userDoc = querySnapshot.documents.firstOrNull() ?: return null
-            val codeUser = userDoc.id
+            val codeUser = userDoc.getString("codeUser") ?: return null
             val existingRequestLeft = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("codeReceiver", codeUser)
@@ -99,12 +93,12 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
         return try{
             if(!currentUser.isEmailVerified) return false
-            val querySnapshot = Firebase.firestore.collection("users")
+            val querySnapshot = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name", username)
                 .get()
                 .await()
             val issuerDoc = querySnapshot.documents.firstOrNull() ?: return false
-            val codeIssuer = issuerDoc.id
+            val codeIssuer = issuerDoc.getString("codeUser") ?: return false
             val existingRequest = requestsCollection
                 .whereEqualTo("codeIssuer", codeIssuer)
                 .whereEqualTo("codeReceiver", currentUser.uid)
@@ -133,12 +127,12 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
         return try{
             if(!currentUser.isEmailVerified) return false
-            val querySnapshot = Firebase.firestore.collection("users")
+            val querySnapshot = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name", username)
                 .get()
                 .await()
             val userDoc = querySnapshot.documents.firstOrNull() ?: return false
-            val codeUser = userDoc.id
+            val codeUser = userDoc.getString("codeUser") ?: return false
             val existingRequestLeft = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("codeReceiver", codeUser)
@@ -176,12 +170,12 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
         return try{
             if(!currentUser.isEmailVerified) return false
-            val querySnapshot = Firebase.firestore.collection("users")
+            val querySnapshot = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name", username)
                 .get()
                 .await()
             val userDoc = querySnapshot.documents.firstOrNull() ?: return false
-            val codeReceiver = userDoc.id
+            val codeReceiver = userDoc.getString("codeUser") ?: return false
             val existingRequest = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("codeReceiver", codeReceiver)
@@ -222,13 +216,14 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 for(request in existingRequestsLeft.toObjects(Request::class.java)){
                     val code = request.codeReceiver
                     val date = request.date
-                    val documentSnapshot = Firebase.firestore.collection("users")
-                        .document(code)
+                    val documentSnapshot = Firebase.firestore.collection("usernames")
+                        .whereEqualTo("codeUser",code)
                         .get()
                         .await()
-                    val user = documentSnapshot.toObject(User::class.java)
-                    if (user != null) {
-                        result.add(user.name to date)
+                    val usernameDoc = documentSnapshot.documents.firstOrNull()
+                    val username = usernameDoc?.getString("name")
+                    if (username != null) {
+                        result.add(username to date)
                     }
                 }
             }
@@ -236,13 +231,14 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 for(request in existingRequestsRight.toObjects(Request::class.java)){
                     val code = request.codeIssuer
                     val date = request.date
-                    val documentSnapshot = Firebase.firestore.collection("users")
-                        .document(code)
+                    val documentSnapshot = Firebase.firestore.collection("usernames")
+                        .whereEqualTo("codeUser",code)
                         .get()
                         .await()
-                    val user = documentSnapshot.toObject(User::class.java)
-                    if (user != null) {
-                        result.add(user.name to date)
+                    val usernameDoc = documentSnapshot.documents.firstOrNull()
+                    val username = usernameDoc?.getString("name")
+                    if (username != null) {
+                        result.add(username to date)
                     }
                 }
             }
@@ -272,13 +268,14 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 for(request in existingRequestsRight.toObjects(Request::class.java)){
                     val code = request.codeIssuer
                     val date = request.date
-                    val documentSnapshot = Firebase.firestore.collection("users")
-                        .document(code)
+                    val documentSnapshot = Firebase.firestore.collection("usernames")
+                        .whereEqualTo("codeUser",code)
                         .get()
                         .await()
-                    val user = documentSnapshot.toObject(User::class.java)
-                    if (user != null) {
-                        result.add(user.name to date)
+                    val usernameDoc = documentSnapshot.documents.firstOrNull()
+                    val username = usernameDoc?.getString("name")
+                    if (username != null) {
+                        result.add(username to date)
                     }
                 }
             }

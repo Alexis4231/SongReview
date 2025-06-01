@@ -14,12 +14,12 @@ class SpotifyTokenViewModel : ViewModel() {
     val token: StateFlow<AccessTokenResponse?> = _token
     fun loadToken(){
         viewModelScope.launch {
-            try{
+            kotlin.runCatching{
                 val token = SpotifyRetrofitAuth.api.getToken()
                 _token.value = token
-            }catch (e: Exception){
-                e.printStackTrace()
-            }
+            }.onFailure { e ->
+                Log.e("SpotifyToken", "Error obteniendo el token: ${e.message}")
+            }.getOrNull()
         }
     }
 }

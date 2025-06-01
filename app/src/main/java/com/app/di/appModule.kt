@@ -1,20 +1,16 @@
 package com.app.di
 
-import com.app.data.repository.UserFirestoreRepository
-import com.app.domain.repository.UserRepository
-import com.app.domain.usecase.user.DeleteUserUseCase
-import com.app.domain.usecase.user.ExistUsernameUseCase
-import com.app.domain.usecase.user.GetEmailByNameUseCase
-import com.app.domain.usecase.user.GetUserByCodeUseCase
-import com.app.presentation.viewmodel.UserViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import GetUserDetailsViewModel
 import com.app.data.repository.RequestFirestoreRepository
 import com.app.data.repository.ReviewFirestoreRepository
 import com.app.data.repository.SongFirestoreRepository
+import com.app.data.repository.UserFirestoreRepository
+import com.app.data.repository.UsernameFirestoreRepository
 import com.app.domain.repository.RequestRepository
 import com.app.domain.repository.ReviewRepository
 import com.app.domain.repository.SongRepository
+import com.app.domain.repository.UserRepository
+import com.app.domain.repository.UsernameRepository
 import com.app.domain.usecase.request.AcceptRequestUseCase
 import com.app.domain.usecase.request.CancelRequestUseCase
 import com.app.domain.usecase.request.DeleteRequestUseCase
@@ -31,15 +27,20 @@ import com.app.domain.usecase.song.GetCodeByTitleAndArtistUseCase
 import com.app.domain.usecase.song.GetSongByCodeUseCase
 import com.app.domain.usecase.song.GetSongsUseCase
 import com.app.domain.usecase.song.SaveSongUseCase
-import com.app.domain.usecase.user.GetUsersUseCase
+import com.app.domain.usecase.user.DeleteUserUseCase
+import com.app.domain.usecase.user.GetEmailByNameUseCase
+import com.app.domain.usecase.user.GetUserByCodeUseCase
 import com.app.domain.usecase.user.UpdateFcmTokenUseCase
-import com.app.presentation.viewmodel.DeezerAlbumViewModel
-import com.app.presentation.viewmodel.DeezerArtistsViewModel
-import com.app.presentation.viewmodel.DeezerGenreViewModel
-import com.app.presentation.viewmodel.DeezerGenresViewModel
+import com.app.domain.usecase.username.DeleteUsernameUseCase
+import com.app.domain.usecase.username.ExistUsernameUseCase
+import com.app.domain.usecase.username.GetUsernamesUseCase
+import com.app.domain.usecase.username.SaveUsernameUseCase
 import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
+import com.app.presentation.viewmodel.UserViewModel
+import com.app.presentation.viewmodel.UsernameViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -51,13 +52,12 @@ val appModule = module{
     single<SongRepository> { SongFirestoreRepository(get()) }
     single<ReviewRepository> { ReviewFirestoreRepository(get()) }
     single<RequestRepository> { RequestFirestoreRepository(get()) }
+    single<UsernameRepository> { UsernameFirestoreRepository(get()) }
 
     // UseCase
     factory { GetUserByCodeUseCase(get()) }
-    factory { ExistUsernameUseCase(get()) }
     factory { DeleteUserUseCase(get()) }
     factory { GetEmailByNameUseCase(get()) }
-    factory { GetUsersUseCase(get()) }
     factory { UpdateFcmTokenUseCase(get()) }
     factory { SaveSongUseCase(get()) }
     factory { GetSongsUseCase(get()) }
@@ -75,12 +75,17 @@ val appModule = module{
     factory { CancelRequestUseCase(get()) }
     factory { GetFollowersUseCase(get()) }
     factory { GetRequestFollowersUseCase(get()) }
+    factory { SaveUsernameUseCase(get()) }
+    factory { ExistUsernameUseCase(get())}
+    factory { DeleteUsernameUseCase(get()) }
+    factory { GetUsernamesUseCase(get()) }
 
 
     // ViewModel
-    viewModel { UserViewModel(get(),get(),get(),get(),get(),get()) }
+    viewModel { UserViewModel(get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
     viewModel { ReviewViewModel(get(),get(),get(),get(),get()) }
     viewModel { RequestViewModel(get(),get(),get(),get(),get(),get(),get()) }
+    viewModel { UsernameViewModel(get(),get(),get(),get()) }
 }

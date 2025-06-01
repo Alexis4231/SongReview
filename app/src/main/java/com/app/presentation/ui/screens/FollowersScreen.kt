@@ -64,6 +64,7 @@ import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.UserViewModel
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -82,6 +83,8 @@ fun FollowersScreen(
     val profileItems = listOf("Seguidores","Solicitudes")
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         SnackbarHost(

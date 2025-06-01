@@ -68,8 +68,11 @@ import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
 import com.app.presentation.viewmodel.UserViewModel
+import com.app.presentation.viewmodel.UsernameViewModel
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -427,12 +430,12 @@ fun listProfilesContent(
     search: String,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
-    userViewModel: UserViewModel = koinViewModel(),
+    usernameViewModel: UsernameViewModel = koinViewModel(),
     userDetailsUserViewModel: GetUserDetailsViewModel = viewModel(),
     context: Context = LocalContext.current
 ){
     val density = LocalDensity.current.density
-    val usernames by userViewModel.names.collectAsState()
+    val usernames by usernameViewModel.names.collectAsState()
 
     LaunchedEffect(Unit) {
         userDetailsUserViewModel.loadUserData()
@@ -441,7 +444,7 @@ fun listProfilesContent(
     val myUser by userDetailsUserViewModel.user
 
     LaunchedEffect(Unit) {
-        userViewModel.getUsers()
+        usernameViewModel.getUsernames()
     }
 
     val filteredProfiles = if(search.length >= 1){

@@ -44,18 +44,6 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
         }
     }
 
-    override suspend fun existUsername(name: String): Boolean {
-        return try{
-            val querySnapshot = usersCollection
-                .whereEqualTo("name",name)
-                .get()
-                .await()
-            querySnapshot.documents.isNotEmpty()
-        }catch (e: Exception){
-            false
-        }
-    }
-
     override suspend fun getEmailByName(name: String): String {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return ""
         return try{
@@ -68,20 +56,6 @@ class UserFirestoreRepository(firestore: FirebaseFirestore): UserRepository {
             if(document?.getString("code") == currentUser.uid) email else ""
         }catch (e: Exception){
             ""
-        }
-    }
-
-    override suspend fun getUsers(): List<String> {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
-        return try{
-            if(!currentUser.isEmailVerified) return emptyList()
-            val documentSnapshot = usersCollection
-                .orderBy("creationDate", Query.Direction.DESCENDING)
-                .get().
-                await()
-            documentSnapshot.toObjects(User::class.java).mapNotNull { it.name }
-        }catch (e: Exception) {
-            emptyList()
         }
     }
 

@@ -37,8 +37,22 @@ export const deleteUnverifiedUsers = onSchedule("every 24 hours", async () => {
 
                         if (!snapshot.empty) {
                             const doc = snapshot.docs[0];
+                            const userCode = doc.id;
+                            if(userCode){
+                                const usernameSnapshot = await admin.firestore()
+                                    .collection("usernames")
+                                    .where("codeUser","==",userCode)
+                                    .get();
+                                if(!usernameSnapshot.empty){
+                                    const usernameDoc = usernameSnapshot.docs[0];
+                                    await usernameDoc.ref.delete();
+                                    logger.info("Documento usernames eliminado")
+                                }else{
+                                    logger.warn("No se encontro documento username")
+                                }
+                            }
                             await doc.ref.delete();
-                            logger.info(`Documento de Firestore eliminado para el usuario: ${email}`);
+                            logger.info("Documento user eliminado")
                         }
                     } catch (error) {
                         logger.error(`Error al eliminar el usuario ${email}:`, error);

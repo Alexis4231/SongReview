@@ -81,12 +81,12 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
         return try{
             if(!currentUser.isEmailVerified) return emptyList()
-            val querySnapshotUsers = Firebase.firestore.collection("users")
+            val querySnapshotUsers = Firebase.firestore.collection("usernames")
                 .whereEqualTo("name", username)
                 .get()
                 .await()
             val userDoc = querySnapshotUsers.documents.firstOrNull() ?: return emptyList()
-            val codeUser = userDoc.id
+            val codeUser = userDoc.getString("codeUser") ?: return emptyList()
             val existingRequestLeft = Firebase.firestore.collection("requests")
                 .whereEqualTo("codeIssuer", currentUser.uid)
                 .whereEqualTo("codeReceiver", codeUser)
