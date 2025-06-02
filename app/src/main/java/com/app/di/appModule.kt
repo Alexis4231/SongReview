@@ -18,6 +18,7 @@ import com.app.domain.usecase.request.GetFollowersUseCase
 import com.app.domain.usecase.request.GetRequestFollowersUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
+import com.app.domain.usecase.review.DeleteReviewUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsByUsernameFollowerUseCase
@@ -67,6 +68,7 @@ val appModule = module{
     factory { GetReviewsByCodeSongUseCase(get()) }
     factory { GetReviewsByCodeUserUseCase(get()) }
     factory { GetReviewsByUsernameFollowerUseCase(get()) }
+    factory { DeleteReviewUseCase(get()) }
     factory { GetCodeByTitleAndArtistUseCase(get()) }
     factory { SaveRequestUseCase(get()) }
     factory { GetStatusUseCase(get()) }
@@ -85,7 +87,7 @@ val appModule = module{
     viewModel { UserViewModel(get(),get(),get(),get()) }
     viewModel { GetUserDetailsViewModel() }
     viewModel { SongDBViewModel(get(),get(),get(),get()) }
-    viewModel { ReviewViewModel(get(),get(),get(),get(),get()) }
+    viewModel { ReviewViewModel(get(),get(),get(),get(),get(),get()) }
     viewModel { RequestViewModel(get(),get(),get(),get(),get(),get(),get()) }
     viewModel { UsernameViewModel(get(),get(),get(),get()) }
 }

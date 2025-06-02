@@ -420,15 +420,16 @@ fun UserHeader(
 ) {
     val statusLoading by requestViewModel.isLoading.collectAsState()
 
-    val (colorButton, colorText, statusMessage) = when (status){
-        "PENDING" -> if(isSender){
+    val (colorButton, colorText, statusMessage) = when (status) {
+        "PENDING" -> if (isSender) {
             Triple(Color.Gray, Color.White, "Enviado")
-        }else{
-            Triple(Color.White,Color.Black,"Aceptar")
+        } else {
+            Triple(Color.White, Color.Black, "Aceptar")
         }
         "ACCEPTED" -> Triple(Color.Gray, Color.White, "Siguiendo")
-        else -> Triple(Color.White,Color.Black,"Seguir")
+        else -> Triple(Color.White, Color.Black, "Seguir")
     }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -439,7 +440,7 @@ fun UserHeader(
     ) {
         Column {
             Text(text = name, color = Color.White, fontSize = 18.sp)
-            if(status.equals("ACCEPTED")) {
+            if (status == "ACCEPTED") {
                 Text(text = "$reviewsCount reseñas", color = Color.White, fontSize = 14.sp)
             }
         }
@@ -452,47 +453,80 @@ fun UserHeader(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = name.toUpperCase().firstOrNull()?.toString() ?: "",
+                    text = name.uppercase().firstOrNull()?.toString() ?: "",
                     color = Color.Black,
                     fontSize = 20.sp
                 )
             }
+
             Spacer(modifier = Modifier.height(12.dp))
-            if(!statusLoading) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable {
-                            if(isInternetAvailable(context)) {
-                                when (status) {
-                                    "PENDING" -> if (!isSender) {
+
+            if (!statusLoading) {
+                if (status == "PENDING" && !isSender) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .clickable {
+                                    if (isInternetAvailable(context)) {
                                         onAcceptRequest()
                                     } else {
-                                        onCancelRequest()
-                                    }
-
-                                    "ACCEPTED" -> {
-                                        onDeleteRequest()
-                                    }
-
-                                    else -> {
-                                        onSendRequest()
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Sin conexión a internet")
+                                        }
                                     }
                                 }
-                            }else{
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Sin conexión a internet")
+                                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "Aceptar", color = Color.Black, fontSize = 12.sp)
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clickable {
+                                    if (isInternetAvailable(context)) {
+                                        onCancelRequest()
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Sin conexión a internet")
+                                        }
+                                    }
+                                }
+                                .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "Rechazar", color = Color.White, fontSize = 12.sp)
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .clickable {
+                                if (isInternetAvailable(context)) {
+                                    when (status) {
+                                        "PENDING" -> if (isSender) onCancelRequest()
+                                        "ACCEPTED" -> onDeleteRequest()
+                                        else -> onSendRequest()
+                                    }
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Sin conexión a internet")
+                                    }
                                 }
                             }
-                        }
-                        .background(colorButton, shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = statusMessage, color = colorText, fontSize = 12.sp)
+                            .background(colorButton, shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = statusMessage, color = colorText, fontSize = 12.sp)
+                    }
                 }
-            }else{
+            } else {
                 CircularProgressIndicator(color = Color.White)
             }
         }
@@ -515,7 +549,7 @@ fun showDeleteRequestPopup(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text("Rechazar")
             }
         }
     )

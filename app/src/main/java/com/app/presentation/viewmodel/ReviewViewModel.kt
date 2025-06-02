@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.domain.model.PublicReview
 import com.app.domain.model.Review
+import com.app.domain.usecase.review.DeleteReviewUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeSongUseCase
 import com.app.domain.usecase.review.GetReviewsByCodeUserUseCase
 import com.app.domain.usecase.review.GetReviewsByUsernameFollowerUseCase
@@ -19,7 +20,8 @@ class ReviewViewModel(
     private val getReviewsUseCase: GetReviewsUseCase,
     private val getReviewsByCodeSongUseCase: GetReviewsByCodeSongUseCase,
     private val getReviewsByCodeUserUseCase: GetReviewsByCodeUserUseCase,
-    private val getReviewsByUsernameFollowerUserCase: GetReviewsByUsernameFollowerUseCase
+    private val getReviewsByUsernameFollowerUserCase: GetReviewsByUsernameFollowerUseCase,
+    private val deleteReviewUseCase: DeleteReviewUseCase
 ):ViewModel() {
     private val _review = MutableStateFlow(Review(codeUser = "", publicReview = PublicReview(codeSong = "")))
     val review: StateFlow<Review> = _review
@@ -35,6 +37,9 @@ class ReviewViewModel(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _deleteComplete = MutableStateFlow(false)
+    val deleteComplete = _deleteComplete.asStateFlow()
 
     fun setCodeUser(codeUser: String) {
         _review.value = _review.value.copy(
@@ -80,6 +85,13 @@ class ReviewViewModel(
             _isLoading.value = true
             _publicReviews.value = getReviewsByUsernameFollowerUserCase(username)
             _isLoading.value = false
+        }
+    }
+
+    fun deleteReview(publicReview: PublicReview){
+        viewModelScope.launch {
+            deleteReviewUseCase(publicReview)
+            _deleteComplete.value = true
         }
     }
 }

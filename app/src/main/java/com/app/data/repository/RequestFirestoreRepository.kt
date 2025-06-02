@@ -175,16 +175,28 @@ class RequestFirestoreRepository(firestore: FirebaseFirestore): RequestRepositor
                 .get()
                 .await()
             val userDoc = querySnapshot.documents.firstOrNull() ?: return false
-            val codeReceiver = userDoc.getString("codeUser") ?: return false
-            val existingRequest = requestsCollection
+            val codeUser = userDoc.getString("codeUser") ?: return false
+            val existingRequestLeft = requestsCollection
                 .whereEqualTo("codeIssuer", currentUser.uid)
-                .whereEqualTo("codeReceiver", codeReceiver)
+                .whereEqualTo("codeReceiver", codeUser)
                 .whereEqualTo("status","PENDING")
                 .limit(1)
                 .get()
                 .await()
-            if(!existingRequest.isEmpty){
-                val requestDoc = existingRequest.documents.first()
+            val existingRequestRight = requestsCollection
+                .whereEqualTo("codeIssuer", codeUser)
+                .whereEqualTo("codeReceiver", currentUser.uid)
+                .whereEqualTo("status","PENDING")
+                .limit(1)
+                .get()
+                .await()
+            if(!existingRequestLeft.isEmpty) {
+                val requestDoc = existingRequestLeft.documents.first()
+                requestsCollection.document(requestDoc.id)
+                    .delete()
+                    .await()
+            }else if(!existingRequestRight.isEmpty){
+                val requestDoc = existingRequestRight.documents.first()
                 requestsCollection.document(requestDoc.id)
                     .delete()
                     .await()

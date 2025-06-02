@@ -60,6 +60,7 @@ import com.app.presentation.viewmodel.SongDBViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -91,6 +92,9 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.roundToInt
 import androidx.media3.common.MediaItem
+import com.app.domain.model.User
+import com.app.presentation.ui.screens.showDeleteRequestPopup
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 @Composable
@@ -101,6 +105,7 @@ fun ReviewsScreen(
     reviewViewModel: ReviewViewModel = koinViewModel(),
     userViewModel: UserViewModel = koinViewModel(),
     tokenViewModel: SpotifyTokenViewModel = viewModel(),
+    getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
     context: Context = LocalContext.current
 ) {
     val song by songDBViewModel.song.collectAsState()
@@ -113,6 +118,11 @@ fun ReviewsScreen(
     val density = LocalDensity.current.density
     val loadingReviews by reviewViewModel.isLoading.collectAsState()
 
+    LaunchedEffect(Unit) {
+        getUserDetailsViewModel.loadUserData()
+    }
+
+    val user = getUserDetailsViewModel.user.value
 
     LaunchedEffect(code) {
         code?.let {
@@ -163,7 +173,9 @@ fun ReviewsScreen(
                                     0
                                 }
                                 SongCard(song.title, song.artist, song.genre, rating)
-                                CardPublishReview(it, snackbarHostState, scope, navController)
+                                user?.let { it1 ->
+                                    CardPublishReview(it, snackbarHostState, scope, navController, it1)
+                                }
                             }
 
                             Row(
@@ -189,7 +201,9 @@ fun ReviewsScreen(
                         } else {
                             if (reviews.isNotEmpty()) {
                                 items(reviews) { review ->
-                                    CardReviews(review, navController, snackbarHostState, scope)
+                                    user?.let {
+                                        code?.let { it1 -> CardReviews(it1, review, navController, snackbarHostState, scope, it) }
+                                    }
                                 }
                             } else {
                                 item {
@@ -456,17 +470,14 @@ fun CardPublishReview(
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
     navController: NavController,
+    user: User,
     reviewViewModel: ReviewViewModel = koinViewModel(),
     getUserDetailsViewModel: GetUserDetailsViewModel = koinViewModel(),
     context: Context = LocalContext.current
 ){
-    LaunchedEffect(Unit) {
-        getUserDetailsViewModel.loadUserData()
-    }
     val scope = rememberCoroutineScope()
     var textReview by remember { mutableStateOf(TextFieldValue("")) }
     var punctuation by remember { mutableStateOf(0) }
-    val user = getUserDetailsViewModel.user.value
     var showDialog by remember { mutableStateOf(false) }
 
     Card(
@@ -494,7 +505,7 @@ fun CardPublishReview(
                 modifier = Modifier
                     .fillMaxWidth()
                     .defaultMinSize(minHeight = 100.dp),
-                maxLines = 5,
+                maxLines = 5
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -580,12 +591,26 @@ fun CardPublishReview(
 
 @Composable
 fun CardReviews(
+    code: String,
     review: PublicReview,
     navController: NavController,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
-    context: Context = LocalContext.current
+    user: User,
+    context: Context = LocalContext.current,
+    reviewViewModel: ReviewViewModel = koinViewModel(),
 ){
+    var showDeleteReviewDialog by remember { mutableStateOf(false) }
+    val deleteComplete by reviewViewModel.deleteComplete.collectAsState()
+
+    LaunchedEffect(deleteComplete) {
+        if(deleteComplete){
+            navController.navigate(Screen.Reviews.createRoute(code)){
+                popUpTo(Screen.Reviews.createRoute(code)) { inclusive = true }
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -606,7 +631,15 @@ fun CardReviews(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.clickable {
                         if(isInternetAvailable(context)){
-                            navController.navigate(Screen.CardUser.createRoute(review.username))
+                            if(user.name != review.username) {
+                                navController.navigate(Screen.CardUser.createRoute(review.username))
+                            }else{
+                                navController.navigate(Screen.Profile.route) {
+                                    popUpTo(Screen.Reviews.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
                         }else{
                             scope.launch {
                                 snackbarHostState.showSnackbar("Sin conexión a internet")
@@ -629,7 +662,15 @@ fun CardReviews(
                     color = Color.White,
                     modifier = Modifier.clickable {
                         if(isInternetAvailable(context)){
-                        navController.navigate(Screen.CardUser.createRoute(review.username))
+                            if(user.name != review.username) {
+                                navController.navigate(Screen.CardUser.createRoute(review.username))
+                            }else{
+                                navController.navigate(Screen.Profile.route) {
+                                    popUpTo(Screen.Reviews.route) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
                         }else{
                             scope.launch {
                                 snackbarHostState.showSnackbar("Sin conexión a internet")
@@ -652,9 +693,40 @@ fun CardReviews(
                     color = Color.White
                 )
             }
+            if(user.name == review.username){
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color(0xFF585D5F),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            if (isInternetAvailable(context)) {
+                                showDeleteReviewDialog = true
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Sin conexión a internet")
+                                }
+                            }
+                        }
+                )
+            }
         }
     }
+
+    if (showDeleteReviewDialog) {
+        showDeleteReviewPopup(
+            onConfirm = {
+                showDeleteReviewDialog = false
+                reviewViewModel.deleteReview(review)
+            },
+            onDismiss = {
+                showDeleteReviewDialog = false
+            }
+        )
+    }
 }
+
 
 @Composable
 fun showErrorPopup(
@@ -739,4 +811,26 @@ fun PreviewPlayer(previewUrl: String){
             )
         )
     }
+}
+
+@Composable
+fun showDeleteReviewPopup(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text("Eliminar comentario") },
+        text = { Text("¿Deseas eliminar este comentario?") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Sí")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Rechazar")
+            }
+        }
+    )
 }

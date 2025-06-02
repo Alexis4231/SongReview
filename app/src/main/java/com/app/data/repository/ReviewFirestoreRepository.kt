@@ -2,6 +2,7 @@ package com.app.data.repository
 
 import com.app.domain.model.PublicReview
 import com.app.domain.model.Review
+import com.app.domain.model.User
 import com.app.domain.repository.ReviewRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -115,6 +116,30 @@ class ReviewFirestoreRepository(firestore: FirebaseFirestore): ReviewRepository 
             }
         }catch (e: Exception){
             emptyList()
+        }
+    }
+
+    override suspend fun deleteReview(publicReview: PublicReview): Boolean {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
+        return try {
+            if(!currentUser.isEmailVerified) return false
+            val documentSnapshot = reviewsCollection
+                .whereEqualTo("publicReview.codeSong",publicReview.codeSong)
+                .whereEqualTo("publicReview.username",publicReview.username)
+                .whereEqualTo("publicReview.comment",publicReview.comment)
+                .whereEqualTo("publicReview.rating",publicReview.rating)
+                .whereEqualTo("codeUser",currentUser.uid)
+                .get()
+                .await()
+            val document = documentSnapshot.documents.firstOrNull()
+            if (document != null) {
+                reviewsCollection.document(document.id).delete().await()
+                true
+            } else {
+                false
+            }
+        }catch (e: Exception){
+            false
         }
     }
 }

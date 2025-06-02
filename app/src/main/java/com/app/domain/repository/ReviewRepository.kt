@@ -9,4 +9,5 @@ interface ReviewRepository {
     suspend fun getReviewsByCodeSong(codeSong: String): List<PublicReview>
     suspend fun getReviewsByCodeUser(codeUser: String): List<Review>
     suspend fun getReviewsByUsernameFollower(username: String): List<PublicReview>
+    suspend fun deleteReview(publicReview: PublicReview): Boolean
 }
