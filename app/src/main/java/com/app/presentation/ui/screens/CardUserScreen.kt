@@ -21,12 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HotelClass
-import androidx.compose.material.icons.filled.Mood
-import androidx.compose.material.icons.filled.PersonOutline
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SentimentNeutral
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -34,8 +29,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -63,17 +56,12 @@ import androidx.navigation.NavController
 import com.app.R
 import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
-import com.app.presentation.viewmodel.NavBarViewModel
 import com.app.presentation.viewmodel.RequestViewModel
 import com.app.presentation.viewmodel.ReviewViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
-import com.app.presentation.viewmodel.UserViewModel
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

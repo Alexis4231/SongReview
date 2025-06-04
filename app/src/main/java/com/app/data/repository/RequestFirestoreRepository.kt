@@ -1,8 +1,6 @@
 package com.app.data.repository
 
 import com.app.domain.model.Request
-import com.app.domain.model.User
-import com.app.domain.model.Username
 import com.app.domain.repository.RequestRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth

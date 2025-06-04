@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Search
@@ -53,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -67,12 +65,9 @@ import com.app.isInternetAvailable
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.DeezerGenresViewModel
 import com.app.presentation.viewmodel.SongDBViewModel
-import com.app.presentation.viewmodel.UserViewModel
 import com.app.presentation.viewmodel.UsernameViewModel
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

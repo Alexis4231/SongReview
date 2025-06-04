@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
@@ -57,7 +55,6 @@ import com.app.presentation.ui.screens.SongNotAdded
 import com.app.presentation.ui.screens.SplashScreen
 import com.app.presentation.viewmodel.NavBarViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.firebase.auth.FirebaseAuth
 
 
 @RequiresApi(Build.VERSION_CODES.O)

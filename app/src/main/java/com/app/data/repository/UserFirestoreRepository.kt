@@ -1,11 +1,9 @@
 package com.app.data.repository
 
-import com.app.domain.model.SongDB
 import com.app.domain.model.User
 import com.app.domain.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 

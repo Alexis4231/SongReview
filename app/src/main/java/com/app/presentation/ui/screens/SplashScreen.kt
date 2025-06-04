@@ -19,12 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.delay
 import com.app.R
 import com.app.presentation.navigation.Screen
 import com.app.presentation.viewmodel.UserViewModel
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

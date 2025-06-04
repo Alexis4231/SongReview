@@ -1,14 +1,9 @@
 package com.app.data.repository
 
-import com.app.domain.model.SongDB
-import com.app.domain.model.User
 import com.app.domain.model.Username
 import com.app.domain.repository.UsernameRepository
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 
 class UsernameFirestoreRepository(firestore: FirebaseFirestore): UsernameRepository {

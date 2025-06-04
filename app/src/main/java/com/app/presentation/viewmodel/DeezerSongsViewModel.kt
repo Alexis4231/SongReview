@@ -3,7 +3,6 @@ package com.app.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.data.retrofit.DeezerRetrofitClient
-import com.app.domain.model.Album
 import com.app.domain.model.Song
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

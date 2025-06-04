@@ -61,8 +61,6 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import okhttp3.internal.wait
 import org.koin.androidx.compose.koinViewModel
 
 

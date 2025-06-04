@@ -41,6 +41,9 @@ class ReviewViewModel(
     private val _deleteComplete = MutableStateFlow(false)
     val deleteComplete = _deleteComplete.asStateFlow()
 
+    private val _saveComplete = MutableStateFlow(false)
+    val saveComplete = _saveComplete.asStateFlow()
+
     fun setCodeUser(codeUser: String) {
         _review.value = _review.value.copy(
             codeUser = codeUser
@@ -55,6 +58,7 @@ class ReviewViewModel(
     fun save() {
         viewModelScope.launch {
             saveReviewUseCase(review.value)
+            _saveComplete.value = true
         }
     }
 

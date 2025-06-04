@@ -1,11 +1,8 @@
 package com.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.domain.model.Request
-import com.app.domain.model.SongDB
 import com.app.domain.usecase.request.AcceptRequestUseCase
 import com.app.domain.usecase.request.CancelRequestUseCase
 import com.app.domain.usecase.request.DeleteRequestUseCase
@@ -13,8 +10,6 @@ import com.app.domain.usecase.request.GetFollowersUseCase
 import com.app.domain.usecase.request.GetRequestFollowersUseCase
 import com.app.domain.usecase.request.GetStatusUseCase
 import com.app.domain.usecase.request.SaveRequestUseCase
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

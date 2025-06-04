@@ -2,7 +2,6 @@ package com.app.data.repository
 
 import com.app.domain.model.PublicReview
 import com.app.domain.model.Review
-import com.app.domain.model.User
 import com.app.domain.repository.ReviewRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth

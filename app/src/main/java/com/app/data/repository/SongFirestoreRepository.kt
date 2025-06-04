@@ -1,10 +1,7 @@
 package com.app.data.repository
 
-import com.app.domain.model.Song
 import com.app.domain.model.SongDB
-import com.app.domain.model.User
 import com.app.domain.repository.SongRepository
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query

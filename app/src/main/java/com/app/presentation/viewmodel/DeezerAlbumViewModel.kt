@@ -1,11 +1,8 @@
 package com.app.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.data.retrofit.DeezerRetrofitClient
-import com.app.data.retrofit.SpotifyRetrofitAuth
-import com.app.domain.model.AccessTokenResponse
 import com.app.domain.model.Album
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
